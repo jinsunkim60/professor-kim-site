@@ -22,7 +22,7 @@
 <style>
   .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
   canvas{display:block;width:100%}
-  #ckt{aspect-ratio:1.62/1;border-radius:12px;background:color-mix(in srgb,var(--teach) 5%,transparent)}
+  #ckt{width:100%;height:auto;max-width:580px;margin:0 auto;border-radius:12px;background:color-mix(in srgb,var(--teach) 6%,transparent)}
   .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 22px;margin-top:18px}
   @media(max-width:640px){.controls{grid-template-columns:1fr 1fr}}
   @media(max-width:420px){.controls{grid-template-columns:1fr}}
@@ -95,7 +95,7 @@
     <p>아래는 이 회로를 <strong>실시간으로 푸는 실험실</strong>입니다. 두 전원과 네 저항을 슬라이더로 바꾸면 노드 전압과 전류가 즉시 다시 계산되고, 전류가 각 가지를 흐르는 게 보입니다. (전류가 음수면 화살표 반대 방향으로 흐릅니다.)</p>
 
     <div class="lab">
-      <div class="gwrap"><canvas id="ckt"></canvas></div>
+      <div class="gwrap"><svg id="ckt" viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg"></svg></div>
       <div class="controls">
         <div class="ctrl"><label>좌 전원 V₁ <b><span id="vV1">17</span> V</b></label><input id="sV1" type="range" min="0" max="30" step="0.5" value="17"></div>
         <div class="ctrl"><label>우 전원 V₂ <b><span id="vV2">5</span> V</b></label><input id="sV2" type="range" min="0" max="15" step="0.5" value="5"></div>
@@ -184,68 +184,73 @@ function solve(){
   const i1=(S.V1-Va)/S.R1, i2=(Va-Vb-S.V2)/S.R2, i3=(Va-Vb)/S.R3, i4=Vb/S.R4;
   return {Va,Vb,i1,i2,i3,i4};
 }
-function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
-  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
+// ===== SVG 회로도 (깔끔한 표준 기호) =====
+const NS='http://www.w3.org/2000/svg';
+const _T='var(--text)',_MU='var(--muted)',_TE='var(--teach)',_RS='var(--write)',_SF='var(--surface)',_PU='#7c3aed';
+function _txt(x,y,s,c,sz,anc,wt){return '<text x="'+x+'" y="'+y+'" fill="'+(c||_T)+'" font-size="'+(sz||12)+'" font-family="Pretendard,sans-serif" text-anchor="'+(anc||'middle')+'" dominant-baseline="middle"'+(wt?' font-weight="'+wt+'"':'')+'>'+s+'</text>';}
+function _wire(pts,c,wd){return '<polyline points="'+pts+'" fill="none" stroke="'+(c||_T)+'" stroke-width="'+(wd||2.4)+'" stroke-linecap="round" stroke-linejoin="round"/>';}
+function _node(x,y){return '<circle cx="'+x+'" cy="'+y+'" r="3.4" fill="'+_T+'"/>';}
+function resH(xc,y,label,ly){var w=48,h=18;return '<rect x="'+(xc-w/2)+'" y="'+(y-h/2)+'" width="'+w+'" height="'+h+'" rx="3.5" fill="'+_SF+'" stroke="'+_T+'" stroke-width="2.2"/>'+_txt(xc,(ly||y-16),label,_MU,12,'middle',700);}
+function resV(x,yc,label){var w=18,h=48;return '<rect x="'+(x-w/2)+'" y="'+(yc-h/2)+'" width="'+w+'" height="'+h+'" rx="3.5" fill="'+_SF+'" stroke="'+_T+'" stroke-width="2.2"/>'+_txt(x+18,yc,label,_MU,12,'start',700);}
+function battV(x,yc,label,side){var s=side||1;
+  return '<line x1="'+(x-16)+'" y1="'+(yc-8)+'" x2="'+(x+16)+'" y2="'+(yc-8)+'" stroke="'+_T+'" stroke-width="2.8"/>'+
+    '<line x1="'+(x-8)+'" y1="'+(yc+8)+'" x2="'+(x+8)+'" y2="'+(yc+8)+'" stroke="'+_T+'" stroke-width="2.8"/>'+
+    _txt(x+s*20,yc-8,'+',_RS,11,s>0?'start':'end',700)+_txt(x+s*20,yc+8,'−',_MU,11,s>0?'start':'end',700)+
+    _txt(x,yc-24,label,_RS,12,'middle',700);}
+function iArrow(x,y,horiz,cur,label){var dir=cur>=0?1:-1,a;
+  if(horiz){a='<polygon points="'+(x+dir*8)+','+y+' '+(x-dir*3)+','+(y-5)+' '+(x-dir*3)+','+(y+5)+'" fill="'+_PU+'"/>'+_txt(x,y-13,label,_PU,12,'middle',800);}
+  else{a='<polygon points="'+x+','+(y+dir*8)+' '+(x-5)+','+(y-dir*3)+' '+(x+5)+','+(y-dir*3)+'" fill="'+_PU+'"/>'+_txt(x-14,y,label,_PU,12,'end',800);}
+  return a;}
 
-// ================= 회로도 =================
-function drawCkt(){
-  const c=document.getElementById('ckt'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
-  const text=css('--text'), muted=css('--muted'), line=css('--line'), teach=css('--teach'), red='#d64b3c', purp='#7c3aed';
-  const W=x=>x*w/460, H=y=>y*h/284;
+// ================= SVG 회로도 =================
+function buildCkt(){
+  const svg=document.getElementById('ckt'); if(!svg) return;
   const sol=solve();
-  const wire=(x1,y1,x2,y2)=>{ ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(x1),H(y1)); ctx.lineTo(W(x2),H(y2)); ctx.stroke(); };
-  const node=(x,y)=>{ ctx.fillStyle=text; ctx.beginPath(); ctx.arc(W(x),H(y),3,0,7); ctx.fill(); };
-  function resH(xc,y,label){ const L=48,x0=xc-L/2; ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(x0),H(y));
-    let xx=x0; const seg=L/6; for(let i=0;i<6;i++){ xx+=seg; ctx.lineTo(W(xx-seg/2),H(y)+(i%2?6:-6)); ctx.lineTo(W(xx),H(y)); } ctx.stroke();
-    ctx.fillStyle=muted; ctx.font='12px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillText(label, W(xc), H(y)-13); }
-  function resV(x,yc,label){ const L=48,y0=yc-L/2; ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(x),H(y0));
-    let yy=y0; const seg=L/6; for(let i=0;i<6;i++){ yy+=seg; ctx.lineTo(W(x)+(i%2?6:-6),H(yy-seg/2)); ctx.lineTo(W(x),H(yy)); } ctx.stroke();
-    ctx.fillStyle=muted; ctx.font='12px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(label, W(x)+12, H(yc)); }
-  function battV(x,yc,label){ // + top, − bottom
-    ctx.strokeStyle=text; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(W(x)-13,H(yc-6)); ctx.lineTo(W(x)+13,H(yc-6)); ctx.stroke();       // long +
-    ctx.beginPath(); ctx.moveTo(W(x)-7,H(yc+6)); ctx.lineTo(W(x)+7,H(yc+6)); ctx.stroke();          // short −
-    ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle';
-    ctx.fillText('+',W(x)+16,H(yc-6)); ctx.fillText('–',W(x)+16,H(yc+6));
-    ctx.fillStyle=red; ctx.font='bold 13px Pretendard'; ctx.fillText(label, W(x)-46, H(yc)); }
-  function dots(x1,y1,x2,y2,cur){ const n=Math.max(3,Math.min(9,Math.round(3+Math.abs(cur)*1.4))); const dir=cur>=0?1:-1;
-    for(let k=0;k<n;k++){ let f=(S.ph*dir + k/n); f=((f%1)+1)%1; const x=x1+(x2-x1)*f, y=y1+(y2-y1)*f;
-      ctx.fillStyle=purp; ctx.beginPath(); ctx.arc(W(x),H(y),3,0,7); ctx.fill(); } }
-  function arrow(x,y,dx,label,cur){ const dir=cur>=0?1:-1; ctx.fillStyle=purp;
-    if(dx){ ctx.beginPath(); ctx.moveTo(W(x)+dir*8,H(y)); ctx.lineTo(W(x)-dir*4,H(y)-5); ctx.lineTo(W(x)-dir*4,H(y)+5); ctx.closePath(); ctx.fill(); }
-    else { ctx.beginPath(); ctx.moveTo(W(x),H(y)+dir*8); ctx.lineTo(W(x)-5,H(y)-dir*4); ctx.lineTo(W(x)+5,H(y)-dir*4); ctx.closePath(); ctx.fill(); }
-    ctx.fillStyle=purp; ctx.font='bold 12.5px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillText(label, W(x), H(y)+(dx?18:0)+(dx?0:0)); }
-
-  // 노드 좌표
-  const BL=[50,215],TL=[50,55],Va=[235,55],TR=[420,55],BR=[420,215],Vb=[235,215];
+  // 노드 좌표 (viewBox 460x300)
+  const TL=[60,60],A=[230,60],TR=[400,60],BL=[60,240],B=[230,240],BR=[400,240];
+  let g='';
+  // 전류 애니메이션용 보이지 않는 경로 (양수 방향)
+  g+='<path id="cp1" d="M60,60 L230,60" fill="none" stroke="none"/>';   // i₁: TL→A
+  g+='<path id="cp2" d="M230,60 L400,60" fill="none" stroke="none"/>';  // i₂: A→TR
+  g+='<path id="cp3" d="M230,60 L230,240" fill="none" stroke="none"/>'; // i₃: A→B
+  g+='<path id="cp4" d="M230,240 L60,240" fill="none" stroke="none"/>'; // i₄: B→BL
   // 배선
-  wire(TL[0],TL[1],110,55); wire(160,55,Va[0],Va[1]); // top-left (resistor gap)
-  wire(Va[0],Va[1],345,55); wire(395,55,TR[0],TR[1]); // top-right
-  wire(TL[0],TL[1],TL[0],105); wire(TL[0],155,BL[0],BL[1]);      // left source area
-  wire(TR[0],TR[1],TR[0],105); wire(TR[0],155,BR[0],BR[1]);      // right source area
-  wire(Va[0],Va[1],Va[0],105); wire(Va[0],155,Vb[0],Vb[1]);      // middle
-  wire(BL[0],BL[1],110,215); wire(160,215,Vb[0],Vb[1]); wire(Vb[0],Vb[1],BR[0],BR[1]); // bottom
-  // 저항
-  resH(135,55,'R₁='+S.R1+'Ω'); resH(370,55,'R₂='+S.R2+'Ω'); resV(Va[0],130,'R₃='+S.R3+'Ω'); resH(135,215,'R₄='+S.R4+'Ω');
+  g+=_wire('60,60 400,60');                     // top
+  g+=_wire('60,60 60,142')+_wire('60,158 60,240');   // left (V₁ gap)
+  g+=_wire('400,60 400,142')+_wire('400,158 400,240'); // right (V₂ gap)
+  g+=_wire('230,60 230,240');                   // middle
+  g+=_wire('60,240 400,240');                   // bottom
+  // 저항 (표면색 사각이 전선을 덮음)
+  g+=resH(145,60,'R₁ = '+S.R1+' Ω');
+  g+=resH(315,60,'R₂ = '+S.R2+' Ω');
+  g+=resV(230,150,'R₃ = '+S.R3+' Ω');
+  g+=resH(145,240,'R₄ = '+S.R4+' Ω',256);
   // 전원
-  battV(TL[0],130,'V₁='+S.V1+'V'); battV(TR[0],130,'V₂='+S.V2+'V');
-  // 노드/점
-  [Va,Vb].forEach(p=>node(p[0],p[1]));
-  // 노드 전압 라벨
-  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-  ctx.fillStyle=red; ctx.font='bold 12.5px Pretendard'; ctx.fillText(S.V1+'V', W(TL[0]), H(40));
-  ctx.fillStyle=muted; ctx.fillText('0V', W(BL[0]), H(238));
-  ctx.fillStyle=teach; ctx.font='bold 13px Pretendard';
-  ctx.fillText('Vₐ = '+sol.Va.toFixed(1)+'V', W(Va[0]), H(40));
-  ctx.fillText('V_b = '+sol.Vb.toFixed(1)+'V', W(Vb[0]), H(238));
-  ctx.fillStyle=red; ctx.font='bold 12px Pretendard'; ctx.fillText('V_b+'+S.V2, W(TR[0]), H(40));
-
-  // 전류 점 + 화살표
-  dots(115,55,155,55, sol.i1); arrow(178,55,true,'i₁', sol.i1);
-  dots(350,55,390,55, sol.i2); arrow(300,55,true,'i₂', sol.i2);
-  dots(Va[0],110,Vb[0],155, sol.i3); arrow(Va[0],130,false,'i₃', sol.i3);
-  dots(155,215,115,215, sol.i4);   // 하단 2Ω (Vb→접지)
-  ctx.fillStyle=muted; ctx.font='10.5px Pretendard'; ctx.textAlign='center'; ctx.fillText('loop 1', W(140),H(140)); ctx.fillText('loop 2', W(330),H(140));
+  g+=battV(60,150,'V₁ = '+S.V1+' V',-1);
+  g+=battV(400,150,'V₂ = '+S.V2+' V',1);
+  // 노드 점 + 전압 라벨
+  g+=_node(A[0],A[1])+_node(B[0],B[1]);
+  g+=_txt(230,38,'Vₐ = '+sol.Va.toFixed(1)+' V',_TE,13,'middle',800);
+  g+=_txt(230,268,'V_b = '+sol.Vb.toFixed(1)+' V',_TE,13,'middle',800);
+  g+=_txt(60,44,S.V1+' V',_RS,11.5,'middle',700);
+  g+=_txt(60,262,'0 V (접지)',_MU,11,'middle');
+  // 전류 화살표
+  g+=iArrow(190,60,true,sol.i1,'i₁');
+  g+=iArrow(360,60,true,sol.i2,'i₂');
+  g+=iArrow(230,150,false,sol.i3,'i₃');
+  g+=iArrow(120,240,true,-sol.i4,'i₄');  // i₄ 양수면 B→BL(왼쪽), 화살표 왼쪽
+  // 루프 안내
+  g+=_txt(145,150,'loop 1',_MU,10.5,'middle')+_txt(315,150,'loop 2',_MU,10.5,'middle');
+  g+='<g id="cdots"></g>';
+  svg.innerHTML=g;
+  // 전류 점 생성
+  const cd=svg.querySelector('#cdots');
+  makeDots(cd,'cp1',sol.i1); makeDots(cd,'cp2',sol.i2); makeDots(cd,'cp3',sol.i3); makeDots(cd,'cp4',sol.i4);
+}
+function makeDots(cd,pid,cur){
+  const N=Math.max(3,Math.min(10,Math.round(3+Math.abs(cur)*1.3))), dir=cur>=0?1:-1;
+  for(let k=0;k<N;k++){ const c=document.createElementNS(NS,'circle'); c.setAttribute('r',3); c.setAttribute('fill',_PU);
+    c.setAttribute('data-p',pid); c.setAttribute('data-k',k); c.setAttribute('data-n',N); c.setAttribute('data-dir',dir); cd.appendChild(c); }
 }
 
 function fmt(x){ return (x>=0?'+':'−')+Math.abs(x).toFixed(2); }
@@ -263,7 +268,7 @@ function updateReadout(){ const s=solve();
     '<div class="eq">전압강하 — R₁: '+(s.i1*S.R1).toFixed(2)+'V · R₂: '+Math.abs(s.i2*S.R2).toFixed(2)+'V · R₃: '+(s.i3*S.R3).toFixed(2)+'V · R₄: '+(s.i4*S.R4).toFixed(2)+'V</div>'+
     '<div class="eq">KCL(A): i₁ = i₂ + i₃ → '+s.i1.toFixed(2)+' = '+s.i2.toFixed(2)+' + '+s.i3.toFixed(2)+' '+(kcl?'✓':'')+'  ·  (음수 전류 = 화살표 반대 방향)</div>';
 }
-function redrawAll(){ drawCkt(); updateReadout(); }
+function redrawAll(){ buildCkt(); updateReadout(); }
 
 // 컨트롤
 function bind(id,key,lab,fx){ document.getElementById(id).addEventListener('input',e=>{ S[key]=+e.target.value; document.getElementById(lab).textContent=fx?fx(S[key]):S[key]; redrawAll(); }); }
@@ -275,7 +280,13 @@ document.getElementById('reset').addEventListener('click',()=>{ Object.assign(S,
 
 let last=performance.now();
 function tick(now){ const dt=(now-last)/1000; last=now; const s=solve();
-  const spd=Math.min(0.5,(Math.abs(s.i1)+Math.abs(s.i2)+Math.abs(s.i3))/18)+0.05; S.ph=(S.ph+dt*spd)%1; drawCkt(); requestAnimationFrame(tick); }
+  const spd=Math.min(0.06,(Math.abs(s.i1)+Math.abs(s.i2)+Math.abs(s.i3))/40)+0.006; S.ph=(S.ph+dt*spd*6)%1;
+  const svg=document.getElementById('ckt');
+  if(svg){ svg.querySelectorAll('#cdots circle').forEach(function(c){
+    const pid=c.getAttribute('data-p'), path=svg.querySelector('#'+pid); if(!path) return;
+    const Lt=path.getTotalLength(), k=+c.getAttribute('data-k'), N=+c.getAttribute('data-n'), dir=+c.getAttribute('data-dir');
+    const f=((S.ph*dir+k/N)%1+1)%1, p=path.getPointAtLength(f*Lt); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); }); }
+  requestAnimationFrame(tick); }
 requestAnimationFrame(tick);
 window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll); redrawAll();
 </script>
