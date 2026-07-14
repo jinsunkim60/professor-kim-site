@@ -3,6 +3,17 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="에어컨은 어떻게 시원해지나 — 냉동 사이클을 압력-온도(P-T) 다이어그램으로 보는 인터랙티브">
 <title>에어컨의 원리 — 압력과 온도 (인터랙티브) · 김진선</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="김진선 · Jinsun Kim">
+<meta property="og:title" content="에어컨의 원리 — 압력과 온도 (인터랙티브) · 김진선">
+<meta property="og:description" content="에어컨은 어떻게 시원해지나 — 냉동 사이클을 압력-온도(P-T) 다이어그램으로 보는 인터랙티브">
+<meta property="og:url" content="https://new.professor-kim.com/post-aircon-interactive.html">
+<meta property="og:image" content="https://new.professor-kim.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="에어컨의 원리 — 압력과 온도 (인터랙티브) · 김진선">
+<meta name="twitter:description" content="에어컨은 어떻게 시원해지나 — 냉동 사이클을 압력-온도(P-T) 다이어그램으로 보는 인터랙티브">
+<meta name="twitter:image" content="https://new.professor-kim.com/og.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
@@ -55,6 +66,9 @@
   .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
   .lnav a.nx{text-align:right}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});"></script>
 </head><body>
 <header class="nav"><div class="nav-inner">
   <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
@@ -108,6 +122,36 @@
       </div>
       <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
     </div>
+
+    <h2>연습 퀴즈</h2>
+    <p style="color:var(--muted)">배운 내용을 바로 확인해 보세요. 보기를 고르면 즉시 채점·해설이 나옵니다.</p>
+    <div id="quizBox"></div>
+    <script>
+const QUIZ = [{"q": "냉매가 실내 열을 흡수하는 곳은?", "a": ["응축기", "증발기", "압축기", "팽창밸브"], "correct": 1, "why": "증발기에서 냉매가 저압으로 증발하며 주변 열을 흡수(실내 냉방)."}];
+(function(){
+  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  box.innerHTML = QUIZ.map(function(it,qi){
+    return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
+      '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:7px">'+
+      it.a.map(function(opt,oi){return '<button class="qzopt" data-oi="'+oi+'" style="text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:10px;padding:10px 13px;font-size:14px;cursor:pointer">'+String.fromCharCode(65+oi)+'. '+opt+'</button>';}).join('')+
+      '</div><div class="qzfb" style="display:none;margin-top:10px;font-size:13.5px;line-height:1.6"></div></div>';
+  }).join('');
+  box.querySelectorAll('.qz').forEach(function(qz){
+    var qi=+qz.dataset.qi, it=QUIZ[qi], fb=qz.querySelector('.qzfb');
+    qz.querySelectorAll('.qzopt').forEach(function(b){ b.addEventListener('click',function(){
+      var oi=+b.dataset.oi, ok=oi===it.correct;
+      qz.querySelectorAll('.qzopt').forEach(function(x){ x.disabled=true; var xi=+x.dataset.oi;
+        if(xi===it.correct){ x.style.borderColor='var(--teach)'; x.style.background='color-mix(in srgb,var(--teach) 12%,transparent)'; }
+        else if(x===b){ x.style.borderColor='var(--write)'; x.style.background='color-mix(in srgb,var(--write) 12%,transparent)'; }
+        x.style.cursor='default';
+      });
+      fb.style.display='block';
+      fb.innerHTML=(ok?'<b style="color:var(--teach)">정답!</b> ':'<b style="color:var(--write)">아쉬워요.</b> 정답은 '+String.fromCharCode(65+it.correct)+'. ')+it.why;
+    }); });
+  });
+})();
+    </script>
 
     <p style="margin-top:36px"><a href="/teach-thermo.html">← 열·에너지 목록으로</a></p>
   </article>

@@ -1,11 +1,108 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="light"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="강의자료 열람 및 다운로드"><title>자료실 · 김진선</title>
+<meta name="description" content="강의자료 다운로드 — PDF·슬라이드·MATLAB 코드·문제지">
+<title>자료실 · 강의자료 · 김진선</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="김진선 · Jinsun Kim">
+<meta property="og:title" content="자료실 · 강의자료 · 김진선">
+<meta property="og:description" content="강의자료 다운로드 — PDF·슬라이드·MATLAB 코드·문제지">
+<meta property="og:url" content="https://new.professor-kim.com/materials.html">
+<meta property="og:image" content="https://new.professor-kim.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://new.professor-kim.com/og.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
-</head><body><header class="nav"><div class="nav-inner"><a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a><nav class="nav-links"><a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a><a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a><button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button></nav></div></header><main class="wrap"><section class="page-head"><div class="num" style="color:var(--design)">자료실</div><h1>강의자료</h1><p>강의 슬라이드 · 예제 코드 · 노트를 열람하고 다운로드할 수 있습니다.</p></section><section style="padding-top:24px"><div class="latest-list"><a class="item" href="#"><span class="k design">회로이론</span><h4>3주차 · 페이저와 임피던스 — 강의 슬라이드 <span class="muted" style="font-weight:400">— 페이저 표기, 임피던스, RLC 회로 해석 (PDF)</span></h4><span class="dl">↓ 다운로드 · 2026.05.20</span></a><a class="item" href="#"><span class="k design">신호와 시스템</span><h4>푸리에 변환 예제 모음 + MATLAB 코드 <span class="muted" style="font-weight:400">— 대표 신호의 푸리에 변환 예제와 실행 가능한 스크립트 (ZIP)</span></h4><span class="dl">↓ 다운로드 · 2026.06.02</span></a><a class="item" href="#"><span class="k design">전기기기</span><h4>SRM 토크 해석 노트 <span class="muted" style="font-weight:400">— 스위치드 릴럭턴스 모터 토크 해석 정리 (PDF)</span></h4><span class="dl">↓ 다운로드 · 2026.04.18</span></a></div></section></main><footer><div class="foot"><div class="cr">© 2026 김진선 · 서울 송파</div><div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div></div></footer><script>document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}});</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "bd4a3f69291049bb831238c0b32223b5"}'></script>
+<style>
+  .filt{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}
+  .fbtn{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:100px;padding:7px 14px;font-size:13.5px;font-weight:700;cursor:pointer}
+  .fbtn.on{border-color:var(--design);color:var(--design)}
+  .matlist{display:flex;flex-direction:column;gap:10px}
+  .mat{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .mat .ic{flex:none;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff}
+  .mat .ic.PDF{background:#d64b3c}.mat .ic.PPT{background:#e08a2b}.mat .ic.CODE{background:#7c3aed}.mat .ic.ZIP{background:#3a7bd5}.mat .ic.DOC{background:#2b8a5a}
+  .mat .body{flex:1;min-width:0}
+  .mat .subj{font-size:12px;font-weight:700;color:var(--design)}
+  .mat h4{font-size:15.5px;font-weight:600;letter-spacing:-.01em;margin:2px 0}
+  .mat .meta{font-size:12.5px;color:var(--muted)}
+  .mat .dl{flex:none;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:100px;padding:9px 16px;font-size:13.5px;font-weight:700;text-decoration:none;white-space:nowrap}
+  .mat .dl:hover{border-color:var(--design)}
+  .mat .dl.soon{color:var(--muted);cursor:default}
+  .emptybox{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:22px;color:var(--muted);font-size:14px;line-height:1.7}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <section class="page-head">
+    <div class="num" style="color:var(--design)">자료실</div>
+    <h1>강의자료 다운로드</h1>
+    <p>강의에 쓰인 슬라이드·문제지·MATLAB 코드를 내려받을 수 있습니다. 누구나 다운로드할 수 있습니다.</p>
+  </section>
+
+  <section style="padding-top:8px">
+    <div class="filt" id="filt"></div>
+    <div class="matlist" id="matlist"></div>
+    <p class="note" style="font-size:12.5px;color:var(--muted);margin-top:16px">※ 자료는 계속 추가됩니다. (교수님: 페이지 소스의 <b>MATERIALS</b> 목록에 한 줄 추가하면 이 목록에 나타납니다)</p>
+  </section>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}});
+</script>
+<script>
+/* =======================================================================
+   강의자료 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : MATERIALS 배열에 { t:'제목', subj:'과목', type:'PDF', url:'파일주소' } 한 줄 추가
+   • type 종류   : 'PDF' · 'PPT' · 'CODE' · 'ZIP' · 'DOC'
+   • 파일 올리는 법: GitHub 저장소에 파일을 올리고 그 주소를 url 에 넣거나, 외부 링크(구글드라이브 등)를 넣으면 됩니다.
+   • url 이 비어('') 있으면 '준비중'으로 표시됩니다.
+   ======================================================================= */
+const MATERIALS = [
+  // 예) { t:'3주차 · 페이저와 임피던스 슬라이드', subj:'회로이론', type:'PPT', url:'https://.../phasor.pdf' },
+  // 예) { t:'SRM 토크 해석 MATLAB 코드', subj:'전기기기', type:'CODE', url:'https://github.com/jinsunkim60/...' },
+];
+
+(function(){
+  var list=document.getElementById('matlist'), filt=document.getElementById('filt');
+  var esc=function(t){return (t||'').replace(/[&<>]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];});};
+  if(!MATERIALS.length){
+    filt.style.display='none';
+    list.innerHTML='<div class="emptybox">아직 등록된 자료가 없습니다.<br>강의에 쓰인 슬라이드·문제지·MATLAB 코드를 여기에 올려 방문자가 내려받게 할 수 있습니다. (페이지 소스의 <b style="color:var(--text)">MATERIALS</b> 목록에 추가)</div>';
+    return;
+  }
+  var subjects=['전체'].concat(MATERIALS.map(function(m){return m.subj;}).filter(function(v,i,a){return v&&a.indexOf(v)===i;}));
+  var cur='전체';
+  function render(){
+    filt.innerHTML=subjects.map(function(s){return '<button class="fbtn'+(s===cur?' on':'')+'" data-s="'+esc(s)+'">'+esc(s)+'</button>';}).join('');
+    filt.querySelectorAll('.fbtn').forEach(function(b){ b.addEventListener('click',function(){ cur=b.dataset.s; render(); }); });
+    var items=MATERIALS.filter(function(m){return cur==='전체'||m.subj===cur;});
+    list.innerHTML=items.map(function(m){
+      var type=(m.type||'PDF').toUpperCase();
+      var dl=m.url? '<a class="dl" href="'+m.url+'" target="_blank" rel="noopener" download>↓ 다운로드</a>' : '<span class="dl soon">준비중</span>';
+      return '<div class="mat"><div class="ic '+type+'">'+type+'</div>'+
+        '<div class="body"><div class="subj">'+esc(m.subj||'')+'</div><h4>'+esc(m.t)+'</h4><div class="meta">'+type+(m.size?' · '+esc(m.size):'')+'</div></div>'+
+        dl+'</div>';
+    }).join('');
+  }
+  render();
+})();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "bd4a3f69291049bb831238c0b32223b5"}'></script>
 </body></html>

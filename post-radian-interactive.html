@@ -3,6 +3,17 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="호도각(라디안)은 각도를 원의 호 길이로 나타낸 것 — 원둘레를 곧게 펴서 한 바퀴가 2π임을 보고, 삼각함수까지 배우는 인터랙티브 강의">
 <title>호도각(라디안)과 삼각함수 (인터랙티브) · 김진선</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="김진선 · Jinsun Kim">
+<meta property="og:title" content="호도각(라디안)과 삼각함수 (인터랙티브) · 김진선">
+<meta property="og:description" content="호도각(라디안)은 각도를 원의 호 길이로 나타낸 것 — 원둘레를 곧게 펴서 한 바퀴가 2π임을 보고, 삼각함수까지 배우는 인터랙티브 강의">
+<meta property="og:url" content="https://new.professor-kim.com/post-radian-interactive.html">
+<meta property="og:image" content="https://new.professor-kim.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="호도각(라디안)과 삼각함수 (인터랙티브) · 김진선">
+<meta name="twitter:description" content="호도각(라디안)은 각도를 원의 호 길이로 나타낸 것 — 원둘레를 곧게 펴서 한 바퀴가 2π임을 보고, 삼각함수까지 배우는 인터랙티브 강의">
+<meta name="twitter:image" content="https://new.professor-kim.com/og.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
@@ -56,6 +67,9 @@
   .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
   .lnav a.nx{text-align:right}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});"></script>
 </head><body>
 <header class="nav"><div class="nav-inner">
   <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
@@ -149,6 +163,37 @@
       </div>
       <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
     </div>
+    
+    <h2>연습 퀴즈</h2>
+    <p style="color:var(--muted)">배운 내용을 바로 확인해 보세요. 보기를 고르면 즉시 채점·해설이 나옵니다.</p>
+    <div id="quizBox"></div>
+    <script>
+const QUIZ = [{"q": "360°는 몇 라디안인가?", "a": ["π", "2π", "π/2", "360"], "correct": 1, "why": "원 한 바퀴 = 단위원 둘레 = 2π 라디안."}, {"q": "반 바퀴(180°)는 몇 라디안?", "a": ["π", "2π", "π/2", "1"], "correct": 0, "why": "360° = 2π 이므로 180° = π."}];
+(function(){
+  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  box.innerHTML = QUIZ.map(function(it,qi){
+    return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
+      '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:7px">'+
+      it.a.map(function(opt,oi){return '<button class="qzopt" data-oi="'+oi+'" style="text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:10px;padding:10px 13px;font-size:14px;cursor:pointer">'+String.fromCharCode(65+oi)+'. '+opt+'</button>';}).join('')+
+      '</div><div class="qzfb" style="display:none;margin-top:10px;font-size:13.5px;line-height:1.6"></div></div>';
+  }).join('');
+  box.querySelectorAll('.qz').forEach(function(qz){
+    var qi=+qz.dataset.qi, it=QUIZ[qi], fb=qz.querySelector('.qzfb');
+    qz.querySelectorAll('.qzopt').forEach(function(b){ b.addEventListener('click',function(){
+      var oi=+b.dataset.oi, ok=oi===it.correct;
+      qz.querySelectorAll('.qzopt').forEach(function(x){ x.disabled=true; var xi=+x.dataset.oi;
+        if(xi===it.correct){ x.style.borderColor='var(--teach)'; x.style.background='color-mix(in srgb,var(--teach) 12%,transparent)'; }
+        else if(x===b){ x.style.borderColor='var(--write)'; x.style.background='color-mix(in srgb,var(--write) 12%,transparent)'; }
+        x.style.cursor='default';
+      });
+      fb.style.display='block';
+      fb.innerHTML=(ok?'<b style="color:var(--teach)">정답!</b> ':'<b style="color:var(--write)">아쉬워요.</b> 정답은 '+String.fromCharCode(65+it.correct)+'. ')+it.why;
+    }); });
+  });
+})();
+    </script>
+
     <nav class="lnav"><a class="pv" href="/post-kclkvl-interactive.html"><span class="dir">← 이전 강의</span>KCL·KVL로 회로 분석하기</a><a class="nx" href="/post-omega-sine-interactive.html"><span class="dir">다음 강의 →</span>원주파수 ω와 sin(ωt)</a></nav>
 
     <p style="margin-top:36px"><a href="/teach-circuits.html">← 회로이론 목록으로</a></p>

@@ -3,6 +3,17 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="KCL·KVL로 회로 분석 — 전원·저항을 바꾸면 노드 전압과 전류가 실시간으로 풀리는 인터랙티브 회로 실험실">
 <title>KCL·KVL 회로 분석 (인터랙티브) · 김진선</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="김진선 · Jinsun Kim">
+<meta property="og:title" content="KCL·KVL 회로 분석 (인터랙티브) · 김진선">
+<meta property="og:description" content="KCL·KVL로 회로 분석 — 전원·저항을 바꾸면 노드 전압과 전류가 실시간으로 풀리는 인터랙티브 회로 실험실">
+<meta property="og:url" content="https://new.professor-kim.com/post-kclkvl-interactive.html">
+<meta property="og:image" content="https://new.professor-kim.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="KCL·KVL 회로 분석 (인터랙티브) · 김진선">
+<meta name="twitter:description" content="KCL·KVL로 회로 분석 — 전원·저항을 바꾸면 노드 전압과 전류가 실시간으로 풀리는 인터랙티브 회로 실험실">
+<meta name="twitter:image" content="https://new.professor-kim.com/og.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
@@ -55,6 +66,9 @@
   .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
   .lnav a.nx{text-align:right}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});"></script>
 </head><body>
 <header class="nav"><div class="nav-inner">
   <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
@@ -109,6 +123,37 @@
       </div>
       <div class="note">※ 목록은 교수님이 자유롭게 편집합니다. 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
     </div>
+
+    
+    <h2>연습 퀴즈</h2>
+    <p style="color:var(--muted)">배운 내용을 바로 확인해 보세요. 보기를 고르면 즉시 채점·해설이 나옵니다.</p>
+    <div id="quizBox"></div>
+    <script>
+const QUIZ = [{"q": "KCL(전류 법칙)이 보존하는 것은?", "a": ["에너지", "전하(전류)", "전압", "저항"], "correct": 1, "why": "KCL은 전하 보존 — 노드로 들어온 전류의 합 = 나간 전류의 합."}, {"q": "강의 회로(17·5·1·3·4·2)에서 i₁ 값은?", "a": ["1 A", "2 A", "3 A", "6 A"], "correct": 2, "why": "노드 해석 결과 i₁ = 3 A (Vₐ=14 V, V_b=6 V)."}];
+(function(){
+  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  box.innerHTML = QUIZ.map(function(it,qi){
+    return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
+      '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:7px">'+
+      it.a.map(function(opt,oi){return '<button class="qzopt" data-oi="'+oi+'" style="text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:10px;padding:10px 13px;font-size:14px;cursor:pointer">'+String.fromCharCode(65+oi)+'. '+opt+'</button>';}).join('')+
+      '</div><div class="qzfb" style="display:none;margin-top:10px;font-size:13.5px;line-height:1.6"></div></div>';
+  }).join('');
+  box.querySelectorAll('.qz').forEach(function(qz){
+    var qi=+qz.dataset.qi, it=QUIZ[qi], fb=qz.querySelector('.qzfb');
+    qz.querySelectorAll('.qzopt').forEach(function(b){ b.addEventListener('click',function(){
+      var oi=+b.dataset.oi, ok=oi===it.correct;
+      qz.querySelectorAll('.qzopt').forEach(function(x){ x.disabled=true; var xi=+x.dataset.oi;
+        if(xi===it.correct){ x.style.borderColor='var(--teach)'; x.style.background='color-mix(in srgb,var(--teach) 12%,transparent)'; }
+        else if(x===b){ x.style.borderColor='var(--write)'; x.style.background='color-mix(in srgb,var(--write) 12%,transparent)'; }
+        x.style.cursor='default';
+      });
+      fb.style.display='block';
+      fb.innerHTML=(ok?'<b style="color:var(--teach)">정답!</b> ':'<b style="color:var(--write)">아쉬워요.</b> 정답은 '+String.fromCharCode(65+it.correct)+'. ')+it.why;
+    }); });
+  });
+})();
+    </script>
 
     <nav class="lnav">
       <a class="pv" href="/post-vir-interactive.html"><span class="dir">← 이전 강의</span>전압·전류·저항 (옴의 법칙)</a>
