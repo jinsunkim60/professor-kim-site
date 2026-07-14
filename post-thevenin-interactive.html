@@ -75,7 +75,49 @@
     <p><strong>테브난 정리</strong>는 이 고민을 없애줍니다. 전구가 <em>바라보는 쪽</em>의 회로가 아무리 복잡해도, 전구 입장에서는 결국 <strong>전압원 하나 + 저항 하나</strong>로 똑같이 보인다는 것입니다. 이 둘(<strong style="color:var(--build)">V<sub>th</sub></strong>, <strong style="color:var(--build)">R<sub>th</sub></strong>)만 한 번 구해두면, 전구를 어떤 걸로 갈아끼워도 <strong>공식 하나로 즉시</strong> 전류·전압·밝기를 계산할 수 있습니다.</p>
     <p style="text-align:center;font-size:20px">복잡한 회로 &nbsp;→&nbsp; \(V_{th}\) (전압원) &nbsp;+&nbsp; \(R_{th}\) (저항) &nbsp;→&nbsp; 부하 연결</p>
 
-    <h2>2. 등가회로 구하는 절차 (예제로)</h2>
+    <h2>2. 속을 모르는 블랙박스 — 멀티미터로 재는 값</h2>
+    <p>여기서 중요한 전제가 있습니다. 그 복잡한 회로는 보통 <strong>속을 모릅니다</strong>. 부품이 몇 개고 어떻게 연결됐는지 안 보이는 <strong>블랙박스</strong>라고 생각하세요. 우리가 아는 건 두 단자 <strong>a–b</strong>뿐이고, 손에 든 건 <strong>멀티미터</strong> 하나입니다.</p>
+    <p>놀랍게도 이 블랙박스는 a–b에서 잰 <strong>두 값</strong>이면 완전히 대체됩니다:</p>
+    <ul class="steps">
+      <li><b>전압 측정 → V<sub>th</sub></b> — a–b에 아무것도 안 단 채(개방) 멀티미터를 <strong>전압 모드</strong>로 대면 나오는 값이 <strong>테브난 전압</strong>입니다. (안에서 우리가 인가한 전원 덕에 단자에 전압이 떠 있죠 — 이건 우리가 아는 값)</li>
+      <li><b>저항 측정 → R<sub>th</sub></b> — 인가 전원을 <strong>끈 상태</strong>에서 멀티미터를 <strong>저항 모드</strong>로 a–b에 대면 나오는 값이 <strong>테브난 저항</strong>입니다. (속의 저항은 눈에 안 보이지만, 재면 나옵니다)</li>
+    </ul>
+    <p>그래서 회로도로는 계산해서 구하지만, <strong>실제 실습에서는 멀티미터로 잰 값이 그대로 V<sub>th</sub>·R<sub>th</sub></strong>입니다. 아래에서 직접 대 보세요.</p>
+
+    <div class="lab">
+      <div class="cframe a"><svg id="boxSvg" class="ckt" viewBox="0 0 470 210" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="48" width="168" height="110" rx="12" fill="#262b36" stroke="var(--muted)" stroke-width="2"/>
+        <text x="114" y="94" fill="#9aa3b2" font-size="46" font-family="Pretendard,sans-serif" text-anchor="middle" font-weight="800">?</text>
+        <text x="114" y="140" fill="#c3cad6" font-size="12.5" font-family="Pretendard,sans-serif" text-anchor="middle">복잡한 회로 (속 모름)</text>
+        <line x1="198" y1="80" x2="238" y2="80" stroke="var(--text)" stroke-width="2.4"/>
+        <line x1="198" y1="128" x2="238" y2="128" stroke="var(--text)" stroke-width="2.4"/>
+        <circle cx="238" cy="80" r="3.6" fill="var(--text)"/><text x="245" y="71" fill="var(--design)" font-size="13" font-family="Pretendard,sans-serif" font-weight="800">a</text>
+        <circle cx="238" cy="128" r="3.6" fill="var(--text)"/><text x="245" y="141" fill="var(--design)" font-size="13" font-family="Pretendard,sans-serif" font-weight="800">b</text>
+        <path d="M238,80 C272,80 272,86 300,88" fill="none" stroke="#d64b3c" stroke-width="2.4"/>
+        <path d="M238,128 C272,128 272,122 300,120" fill="none" stroke="var(--muted)" stroke-width="2.4"/>
+        <rect x="300" y="52" width="140" height="104" rx="14" fill="var(--surface)" stroke="var(--text)" stroke-width="2.2"/>
+        <rect x="315" y="66" width="110" height="42" rx="6" fill="#0c2f24"/>
+        <text id="mmRead" x="370" y="90" fill="#4be3a0" font-size="26" font-family="Pretendard,sans-serif" text-anchor="middle" font-weight="800">— — —</text>
+        <text id="mmMode" x="370" y="130" fill="var(--muted)" font-size="12.5" font-family="Pretendard,sans-serif" text-anchor="middle">아래 버튼을 눌러 측정하세요</text>
+      </svg></div>
+      <div class="btns">
+        <button class="abtn" id="measV">🔌 전압 측정 (개방)</button>
+        <button class="abtn" id="measR">🔧 저항 측정 (전원 OFF)</button>
+      </div>
+      <div class="cap" id="boxCap">멀티미터를 a–b에 대 봅시다. <b>전압</b>을 재면 V<sub>th</sub>, <b>저항</b>을 재면 R<sub>th</sub>가 나옵니다.</div>
+    </div>
+    <script>
+    (function(){
+      var rd=document.getElementById('mmRead'),md=document.getElementById('mmMode'),cap=document.getElementById('boxCap'),v=document.getElementById('measV'),r=document.getElementById('measR');
+      if(!rd) return;
+      v.addEventListener('click',function(){ rd.setAttribute('fill','#4be3a0'); rd.textContent='8.00 V'; md.textContent='V · 전압 모드 (개방)'; v.classList.add('hot'); r.classList.remove('hot');
+        cap.innerHTML='<b>전압 측정 → V<sub>th</sub></b> — a–b를 열어둔 채 전압을 재니 <b>8.00 V</b>. 이 개방 단자 전압이 곧 테브난 전압입니다. (안에서 인가한 전원 덕에 뜬 전압 — 우리가 아는 값)'; });
+      r.addEventListener('click',function(){ rd.setAttribute('fill','#ffd65a'); rd.textContent='2.00 Ω'; md.textContent='Ω · 저항 모드 (전원 OFF)'; r.classList.add('hot'); v.classList.remove('hot');
+        cap.innerHTML='<b>저항 측정 → R<sub>th</sub></b> — 인가 전원을 끈 뒤 a–b 저항을 재니 <b>2.00 Ω</b>. 속의 저항은 눈에 안 보여도 재면 나옵니다 — 이게 테브난 저항.'; });
+    })();
+    </script>
+
+    <h2>3. 등가회로 구하는 절차 (예제로)</h2>
     <p>예제: <strong>12 V</strong> 전원, <strong>3 Ω</strong>(직렬)과 <strong>6 Ω</strong>이 연결된 회로의 단자 <strong>a–b</strong>에 부하 \(R_L\)이 붙어 있습니다. 아래 버튼으로 단계를 넘겨 보세요.</p>
 
     <div class="lab">
@@ -98,7 +140,7 @@
     </ol>
     <p class="note">※ 전원 제거 규칙: <strong>전압원 → 단락(0 Ω 선)</strong>, <strong>전류원 → 개방(끊음)</strong>. 종속전원이 없으면 이 방법으로 \(R_{th}\)를 바로 구할 수 있습니다.</p>
 
-    <h2>3. 꼬마전구 실험 — 부하를 바꿔 보기</h2>
+    <h2>4. 꼬마전구 실험 — 부하를 바꿔 보기</h2>
     <p>이제 테브난 등가(<strong>8 V + 2 Ω</strong>)에 <strong>꼬마전구(부하 \(R_L\))</strong>를 답니다. 슬라이더로 전구 저항을 바꾸면, 회로 전체를 다시 풀 필요 없이 <strong>공식 하나</strong>로 전류·전압·밝기가 즉시 나옵니다.</p>
     <p style="text-align:center;font-size:19px">\(I = \dfrac{V_{th}}{R_{th}+R_L}\), &nbsp; \(V_L = I\cdot R_L\), &nbsp; \(P_L = I^2 R_L\)</p>
 
@@ -111,7 +153,7 @@
       <div class="note">※ 전구가 가장 밝은 곳(최대 전력)은 \(R_L = R_{th} = 2\ \Omega\)일 때입니다 — 이것이 <strong>최대 전력 전달</strong>. 그보다 크거나 작으면 어두워집니다.</div>
     </div>
 
-    <h2>4. 정리</h2>
+    <h2>5. 정리</h2>
     <p>테브난 정리는 <strong>"부하가 바라보는 복잡한 회로 = 전압원 하나 + 저항 하나"</strong>로 요약하는 도구입니다. 절차는 ① 부하 분리 → ② 개방전압 \(V_{th}\) → ③ 전원 제거 후 \(R_{th}\) → ④ 둘을 직렬로. 한 번 구해두면 <strong>부하를 아무리 바꿔도</strong> \(I=V_{th}/(R_{th}+R_L)\) 하나로 끝납니다. 다음 강의는 이것과 짝을 이루는 <strong>노튼 등가</strong>입니다.</p>
 
     <h2>▶ 이론 강의 (영상)</h2>
@@ -154,8 +196,13 @@ function resH(x,y,label,c){var w=54,h=20;return '<rect x="'+(x-w/2)+'" y="'+(y-h
 function resV(x,y,label,c){var w=20,h=50;return '<rect x="'+(x-w/2)+'" y="'+(y-h/2)+'" width="'+w+'" height="'+h+'" rx="3.5" fill="'+SF+'" stroke="'+(c||T)+'" stroke-width="2.2"/>'+txt(x+w/2+7,y,label,c||MU,12,'start',700);}
 function batt(x,y,label){return '<line x1="'+(x-16)+'" y1="'+(y-6)+'" x2="'+(x+16)+'" y2="'+(y-6)+'" stroke="'+T+'" stroke-width="2.6"/>'+
   '<line x1="'+(x-8)+'" y1="'+(y+6)+'" x2="'+(x+8)+'" y2="'+(y+6)+'" stroke="'+T+'" stroke-width="2.6"/>'+
-  '<text x="'+(x-23)+'" y="'+(y-6)+'" fill="'+RD+'" font-size="11" font-family="Pretendard" text-anchor="end">+</text>'+
-  txt(x-23,y+7,label,RD,12.5,'end',700);}
+  txt(x+21,y-6,'+',RD,12,'start',700)+txt(x+21,y+7,'−',MU,12,'start',700)+
+  txt(x,y-24,label,RD,12.5,'middle',800);}
+// 전압 화살표(회로 바깥, +→−) · 전류 화살표(전선 위, 방향)
+function vArrow(x,yTop,yBot,label,c){c=c||RD;return '<line x1="'+x+'" y1="'+yTop+'" x2="'+x+'" y2="'+(yBot-6)+'" stroke="'+c+'" stroke-width="2.2"/>'+
+  '<polygon points="'+x+','+yBot+' '+(x-5)+','+(yBot-11)+' '+(x+5)+','+(yBot-11)+'" fill="'+c+'"/>'+
+  txt(x-8,yTop+4,'+',c,12,'end',700)+txt(x-8,yBot-4,'−',c,12,'end',700)+txt(x+9,(yTop+yBot)/2,label,c,13,'start',800);}
+function iArrow(x,y,label,c){c=c||'#7c3aed';return '<polygon points="'+(x+9)+','+y+' '+(x-3)+','+(y-6)+' '+(x-3)+','+(y+6)+'" fill="'+c+'"/>'+txt(x+2,y-13,label,c,13,'middle',800);}
 function node(x,y,l,lc){return '<circle cx="'+x+'" cy="'+y+'" r="3.4" fill="'+T+'"/>'+(l?txt(x+10,y-10,l,lc||BL,12.5,'start',800):'');}
 
 // ================= 단계 회로 (SVG) =================
@@ -186,9 +233,7 @@ function node(x,y,l,lc){return '<circle cx="'+x+'" cy="'+y+'" r="3.4" fill="'+T+
       g+=node(aX,top,'a')+node(aX,bot,'b');
       if(step===0){ g+=wire(aX+','+top+' '+aX+','+95)+resV(aX,120,'R_L',AM)+wire(aX+','+145+' '+aX+','+bot); }
       else { g+='<line x1="'+aX+'" y1="'+(top+8)+'" x2="'+aX+'" y2="'+(bot-8)+'" stroke="'+LN+'" stroke-width="2" stroke-dasharray="5 5"/>'; g+=txt(aX+8,120,'(분리)',MU,11,'start'); }
-      if(step===2){ g+='<line x1="'+(aX-18)+'" y1="'+(top+12)+'" x2="'+(aX-18)+'" y2="'+(bot-12)+'" stroke="'+RD+'" stroke-width="2.4"/>';
-        g+='<polygon points="'+(aX-18)+','+(top+12)+' '+(aX-23)+','+(top+22)+' '+(aX-13)+','+(top+22)+'" fill="'+RD+'"/>';
-        g+=txt(aX-26,120,'V_th = 8 V',RD,14,'end',800); }
+      if(step===2){ g+=vArrow(aX+28,top+6,bot-6,'V_th = 8 V'); }
       if(step===3){ g+=txt(A-30,bot+26,'R_th = 3 ∥ 6 = 2 Ω',BL,14,'middle',800); }
     } else {
       var ex=105, rx=245;
@@ -232,6 +277,8 @@ function node(x,y,l,lc){return '<circle cx="'+x+'" cy="'+y+'" r="3.4" fill="'+T+
   // 필라멘트
   stat+='<path d="M'+(bX-11)+','+(bY+7)+' L'+(bX-5.5)+','+(bY-7)+' L'+bX+','+(bY+7)+' L'+(bX+5.5)+','+(bY-7)+' L'+(bX+11)+','+(bY+7)+'" fill="none" stroke="#b5771a" stroke-width="2" stroke-linejoin="round"/>';
   stat+=txt(bX,bot+16,'R_L (꼬마전구)',MU,11.5,'middle',600);
+  stat+=iArrow(150,top,'I');                          // 전류: 전선 위 화살표
+  stat+=vArrow(bX+44,bY-bR,bY+bR,'V_L',BL);           // 부하 전압: 회로 바깥 화살표(+→−)
   stat+='<g id="dots"></g>';
   svg.innerHTML=stat;
   var glowC=svg.querySelector('#glowC'), bulbFill=svg.querySelector('#bulbFill'), dotsG=svg.querySelector('#dots');
