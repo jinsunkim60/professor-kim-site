@@ -22,7 +22,7 @@
   canvas{display:block;width:100%}
   .srmgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:680px){.srmgrid{grid-template-columns:1fr}}
-  #xsec{aspect-ratio:1/1;border-radius:12px;background:color-mix(in srgb,var(--design) 5%,transparent)}
+  #xsec{width:100%;height:auto;aspect-ratio:1/1;border-radius:12px;background:color-mix(in srgb,var(--design) 5%,transparent)}
   .graphs{display:flex;flex-direction:column;gap:10px}
   .gbox{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 10px 4px}
   .gbox h4{font-size:12px;color:var(--muted);font-weight:700;margin:0 0 2px}
@@ -88,7 +88,7 @@
 
     <div class="lab">
       <div class="srmgrid">
-        <div class="gwrap"><canvas id="xsec"></canvas></div>
+        <div class="gwrap"><svg id="xsec" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto"></svg></div>
         <div class="graphs">
           <div class="gbox"><h4>① 인덕턴스 L(θ) [mH]</h4><canvas id="gL"></canvas></div>
           <div class="gbox"><h4>② 인덕턴스 기울기 dL/dθ [H/rad]</h4><canvas id="gD"></canvas></div>
@@ -219,51 +219,47 @@ function drawT(){ const c=document.getElementById('gT'); const {ctx,w,h}=fit(c);
   const col=base; marker(ctx,gx,gy,h,pad,M.theta,torque(M.theta,20),col);
 }
 
-// ===== 6/4 단면 =====
-function drawXsec(){
-  const c=document.getElementById('xsec'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
-  const text=css('--text'), muted=css('--muted'), line=css('--line'), teach=css('--teach'), design=css('--design'), build=css('--build');
-  const cx=w/2, cy=h/2, R=Math.min(w,h)*0.46;
-  const Rso=R, Rsi=R*0.62, Rro=R*0.56, Rri=R*0.20;   // stator out/in, rotor out/in
+// ===== 6/4 단면 (SVG) =====
+const NS='http://www.w3.org/2000/svg';
+const VB=300, XCX=150, XCY=150, RSO=118, RSI=73, RRO=66, RRI=24;
+function _sector(rIn,rOut,a0,a1,fill,stroke,sw){
+  const pt=(r,a)=>(XCX+r*Math.cos(a)).toFixed(2)+','+(XCY+r*Math.sin(a)).toFixed(2);
+  const large=(a1-a0)>Math.PI?1:0;
+  return '<path d="M'+pt(rIn,a0)+' L'+pt(rOut,a0)+' A'+rOut+','+rOut+' 0 '+large+' 1 '+pt(rOut,a1)+' L'+pt(rIn,a1)+' A'+rIn+','+rIn+' 0 '+large+' 0 '+pt(rIn,a0)+' Z" fill="'+fill+'"'+(stroke?' stroke="'+stroke+'" stroke-width="'+(sw||1.2)+'"':'')+'/>';
+}
+function _xtxt(x,y,s,c,sz,wt){return '<text x="'+x+'" y="'+y+'" fill="'+(c||'var(--text)')+'" font-size="'+(sz||11)+'" font-family="Pretendard,sans-serif" text-anchor="middle" dominant-baseline="middle"'+(wt?' font-weight="'+wt+'"':'')+'>'+s+'</text>';}
+function buildXsec(){
+  const svg=document.getElementById('xsec'); if(!svg) return;
+  const TE='var(--teach)',DE='var(--design)',MU='var(--muted)',LN='var(--line)',TX='var(--text)';
+  let g='';
   // 하우징
-  ctx.strokeStyle=line; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,cy,Rso,0,7); ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx,cy,Rsi,0,7); ctx.stroke();
+  g+='<circle cx="'+XCX+'" cy="'+XCY+'" r="'+RSO+'" fill="none" stroke="'+LN+'" stroke-width="2"/>';
+  g+='<circle cx="'+XCX+'" cy="'+XCY+'" r="'+RSI+'" fill="none" stroke="'+LN+'" stroke-width="2"/>';
   // 고정자 6극 (수직 쌍 통전)
-  const spw=0.28; // 극 반각(rad)
-  for(let k=0;k<6;k++){ const a=k*Math.PI/3 - Math.PI/2;   // 상단부터
-    const energized = (k===0||k===3);
-    ctx.fillStyle = energized ? 'color-mix(in srgb,'+design+' 34%,transparent)' : 'color-mix(in srgb,'+muted+' 16%,transparent)';
-    ctx.beginPath(); ctx.moveTo(cx+Rsi*Math.cos(a-spw),cy+Rsi*Math.sin(a-spw));
-    ctx.arc(cx,cy,Rsi,a-spw,a+spw);
-    ctx.lineTo(cx+ (Rro+ (Rsi-Rro)*0.12)*Math.cos(a+spw), cy+(Rro+(Rsi-Rro)*0.12)*Math.sin(a+spw));
-    ctx.arc(cx,cy,Rro+(Rsi-Rro)*0.12,a+spw,a-spw,true); ctx.closePath(); ctx.fill();
-    if(energized){ // 코일 표시
-      ctx.fillStyle=design; ctx.font='bold 11px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      const rr=(Rsi+Rso)/2; ctx.fillText(k===0?'A':'A′', cx+rr*Math.cos(a), cy+rr*Math.sin(a)); }
+  const spw=0.28, rInS=RRO+(RSI-RRO)*0.12;
+  for(let k=0;k<6;k++){ const a=k*Math.PI/3-Math.PI/2, en=(k===0||k===3);
+    g+=_sector(rInS,RSI,a-spw,a+spw, en?'color-mix(in srgb,'+DE+' 34%,transparent)':'color-mix(in srgb,'+MU+' 16%,transparent)', en?DE:LN, en?1.4:1);
+    if(en){ const rr=(RSI+RSO)/2; g+=_xtxt(XCX+rr*Math.cos(a),XCY+rr*Math.sin(a), k===0?'A':'A′', DE,11,700); }
   }
-  // 회전자 4극 (theta 만큼 회전)
-  const th=M.theta*Math.PI/180;
-  ctx.fillStyle='color-mix(in srgb,'+teach+' 22%,transparent)';
-  ctx.beginPath(); ctx.arc(cx,cy,Rri,0,7); ctx.fill();
-  ctx.strokeStyle=teach; ctx.lineWidth=1.5; ctx.stroke();
+  // 회전자 그룹 (θ=0 기준, transform으로 회전)
+  let rg='<circle cx="'+XCX+'" cy="'+XCY+'" r="'+RRI+'" fill="color-mix(in srgb,'+TE+' 22%,transparent)" stroke="'+TE+'" stroke-width="1.5"/>';
   const rpw=0.34;
-  for(let k=0;k<4;k++){ const a=k*Math.PI/2 - Math.PI/2 + th;
-    ctx.fillStyle='color-mix(in srgb,'+teach+' 30%,transparent)';
-    ctx.beginPath(); ctx.moveTo(cx+Rri*Math.cos(a-rpw),cy+Rri*Math.sin(a-rpw));
-    ctx.arc(cx,cy,Rri,a-rpw,a+rpw);
-    ctx.lineTo(cx+Rro*Math.cos(a+rpw),cy+Rro*Math.sin(a+rpw));
-    ctx.arc(cx,cy,Rro,a+rpw,a-rpw,true); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle=teach; ctx.lineWidth=1.2; ctx.stroke();
-  }
-  // 샤프트
-  ctx.fillStyle=text; ctx.beginPath(); ctx.arc(cx,cy,Rri*0.28,0,7); ctx.fill();
+  for(let k=0;k<4;k++){ const a=k*Math.PI/2-Math.PI/2; rg+=_sector(RRI,RRO,a-rpw,a+rpw,'color-mix(in srgb,'+TE+' 30%,transparent)',TE,1.2); }
+  rg+='<circle cx="'+XCX+'" cy="'+XCY+'" r="'+(RRI*0.28).toFixed(1)+'" fill="'+TX+'"/>';
+  g+='<g id="rotorG">'+rg+'</g>';
   // 라벨
-  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-  ctx.fillText('통전 극 A–A′ (수직)', cx, cy-Rso-4<12? 14 : cy-Rso-4);
-  ctx.fillStyle=teach; ctx.fillText('회전자 θ = '+M.theta.toFixed(1)+'°', cx, cy+Rso+14);
+  g+=_xtxt(XCX,14,'통전 극 A–A′ (수직)',MU,11);
+  g+='<text id="thLabel" x="'+XCX+'" y="'+(VB-8)+'" fill="'+TE+'" font-size="12.5" font-family="Pretendard,sans-serif" text-anchor="middle" font-weight="700"></text>';
+  svg.innerHTML=g;
+  updateRotor();
+}
+function updateRotor(){
+  const svg=document.getElementById('xsec'); if(!svg) return;
+  const rg=svg.querySelector('#rotorG'); if(rg) rg.setAttribute('transform','rotate('+M.theta+','+XCX+','+XCY+')');
+  const tl=svg.querySelector('#thLabel'); if(tl) tl.textContent='회전자 θ = '+M.theta.toFixed(1)+'°';
 }
 
-function redrawAll(){ drawXsec(); drawL(); drawD(); drawT(); }
+function redrawAll(){ buildXsec(); drawL(); drawD(); drawT(); }
 
 // 컨트롤
 document.getElementById('sTh').addEventListener('input',e=>{ M.theta=+e.target.value; document.getElementById('vTh').textContent=M.theta.toFixed(1); redrawAll(); });
@@ -272,7 +268,7 @@ document.getElementById('play').addEventListener('click',function(){ M.play=!M.p
 
 let last=performance.now();
 function tick(now){ const dt=(now-last)/1000; last=now;
-  if(M.play){ M.theta+=dt*22; if(M.theta>45) M.theta=0; document.getElementById('sTh').value=M.theta; document.getElementById('vTh').textContent=M.theta.toFixed(1); redrawAll(); }
+  if(M.play){ M.theta+=dt*22; if(M.theta>45) M.theta=0; document.getElementById('sTh').value=M.theta; document.getElementById('vTh').textContent=M.theta.toFixed(1); updateRotor(); drawL(); drawD(); drawT(); }
   requestAnimationFrame(tick); }
 requestAnimationFrame(tick);
 window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll); redrawAll();
