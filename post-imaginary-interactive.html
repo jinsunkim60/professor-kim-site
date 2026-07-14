@@ -179,7 +179,7 @@
     <script>
 const QUIZ = [{"q": "복소평면에서 × i 는 몇 도 회전인가?", "a": ["45°", "90°", "180°", "270°"], "correct": 1, "why": "i² = −1(180° 회전)의 절반이므로 × i = 90° 회전."}, {"q": "i² 의 값은?", "a": ["1", "−1", "i", "0"], "correct": 1, "why": "허수 단위 정의: i² = −1."}, {"q": "× i 를 네 번 하면 벡터는?", "a": ["180° 회전", "제자리(360°)", "90° 회전", "크기 4배"], "correct": 1, "why": "90°×4 = 360° → 1 → i → −1 → −i → 1 로 제자리."}];
 (function(){
-  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
   box.innerHTML = QUIZ.map(function(it,qi){
     return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
       '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+

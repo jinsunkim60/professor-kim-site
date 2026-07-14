@@ -129,7 +129,7 @@
     <script>
 const QUIZ = [{"q": "냉매가 실내 열을 흡수하는 곳은?", "a": ["응축기", "증발기", "압축기", "팽창밸브"], "correct": 1, "why": "증발기에서 냉매가 저압으로 증발하며 주변 열을 흡수(실내 냉방)."}];
 (function(){
-  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
   box.innerHTML = QUIZ.map(function(it,qi){
     return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
       '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+

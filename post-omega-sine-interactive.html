@@ -118,7 +118,7 @@
     <script>
 const QUIZ = [{"q": "각주파수 ω와 주파수 f의 관계는?", "a": ["ω = f", "ω = 2πf", "ω = f/2π", "ω = πf"], "correct": 1, "why": "ω = 2πf — 1초에 f바퀴, 한 바퀴가 2π."}, {"q": "f가 2배가 되면 ω는?", "a": ["그대로", "절반", "2배", "4배"], "correct": 2, "why": "ω = 2πf 이므로 f에 비례 → 2배."}];
 (function(){
-  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
   box.innerHTML = QUIZ.map(function(it,qi){
     return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
       '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+

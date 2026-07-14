@@ -141,7 +141,7 @@
     <script>
 const QUIZ = [{"q": "저항 10 Ω에 5 V를 걸면 전류는?", "a": ["0.5 A", "2 A", "50 A", "15 A"], "correct": 0, "why": "옴의 법칙 I = V/R = 5/10 = 0.5 A."}, {"q": "전압을 그대로 두고 저항을 2배로 늘리면 전류는?", "a": ["2배", "그대로", "절반", "0"], "correct": 2, "why": "I = V/R 에서 R이 2배면 전류는 절반."}];
 (function(){
-  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
   box.innerHTML = QUIZ.map(function(it,qi){
     return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
       '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+

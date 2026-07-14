@@ -155,7 +155,7 @@
     <script>
 const QUIZ = [{"q": "공통이미터 증폭기의 전압이득 근사식은?", "a": ["Av ≈ Rc/Re", "Av ≈ Re/Rc", "Av ≈ Rc·Re", "Av ≈ 1"], "correct": 0, "why": "소신호에서 Av ≈ Rc/Re (출력은 입력의 반전)."}];
 (function(){
-  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
   box.innerHTML = QUIZ.map(function(it,qi){
     return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
       '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+

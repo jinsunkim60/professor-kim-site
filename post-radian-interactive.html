@@ -170,7 +170,7 @@
     <script>
 const QUIZ = [{"q": "360°는 몇 라디안인가?", "a": ["π", "2π", "π/2", "360"], "correct": 1, "why": "원 한 바퀴 = 단위원 둘레 = 2π 라디안."}, {"q": "반 바퀴(180°)는 몇 라디안?", "a": ["π", "2π", "π/2", "1"], "correct": 0, "why": "360° = 2π 이므로 180° = π."}];
 (function(){
-  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
   box.innerHTML = QUIZ.map(function(it,qi){
     return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
       '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+

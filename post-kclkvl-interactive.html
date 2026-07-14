@@ -131,7 +131,7 @@
     <script>
 const QUIZ = [{"q": "KCL(전류 법칙)이 보존하는 것은?", "a": ["에너지", "전하(전류)", "전압", "저항"], "correct": 1, "why": "KCL은 전하 보존 — 노드로 들어온 전류의 합 = 나간 전류의 합."}, {"q": "강의 회로(17·5·1·3·4·2)에서 i₁ 값은?", "a": ["1 A", "2 A", "3 A", "6 A"], "correct": 2, "why": "노드 해석 결과 i₁ = 3 A (Vₐ=14 V, V_b=6 V)."}];
 (function(){
-  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
   box.innerHTML = QUIZ.map(function(it,qi){
     return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
       '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+

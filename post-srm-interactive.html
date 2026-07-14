@@ -127,7 +127,7 @@
     <script>
 const QUIZ = [{"q": "SRM의 토크는 무엇에 비례하는가?", "a": ["인덕턴스 L", "인덕턴스 기울기 dL/dθ", "저항", "전압"], "correct": 1, "why": "T = ½ i² dL/dθ — 인덕턴스가 각도에 따라 변하는 기울기에 비례."}, {"q": "전류를 2배로 하면 토크는?", "a": ["2배", "4배", "절반", "그대로"], "correct": 1, "why": "T ∝ i² 이므로 전류 2배 → 토크 4배."}];
 (function(){
-  var box=document.getElementById('quizBox'); if(!box||!window.QUIZ||!QUIZ.length) return;
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
   box.innerHTML = QUIZ.map(function(it,qi){
     return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
       '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+
