@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="테브난 정리 — 복잡한 회로도 '전압원 하나 + 저항 하나'로 요약. 오디오 회로에 꼬마전구를 다는 비유로, 부하를 바꿔도 전류·전압을 바로 구하는 법을 애니메이션으로 배우는 인터랙티브 강의">
+<title>테브난 정리는 왜 필요한가 (인터랙티브) · 김진선</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="김진선 · Jinsun Kim">
+<meta property="og:title" content="테브난 정리는 왜 필요한가 (인터랙티브) · 김진선">
+<meta property="og:description" content="복잡한 회로를 '전압원 하나 + 저항 하나'로 요약 — 오디오 회로에 꼬마전구 달기 비유로 배우는 인터랙티브 강의">
+<meta property="og:url" content="https://new.professor-kim.com/post-thevenin-interactive.html">
+<meta property="og:image" content="https://new.professor-kim.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://new.professor-kim.com/og.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});"></script>
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  canvas{display:block;width:100%}
+  #stepC{aspect-ratio:1.7/1;border-radius:12px;background:color-mix(in srgb,var(--design) 5%,transparent)}
+  #bulbC{aspect-ratio:1.7/1;border-radius:12px;background:color-mix(in srgb,var(--build) 6%,transparent)}
+  .btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .abtn{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:100px;padding:6px 13px;font-size:13.5px;font-weight:700;cursor:pointer}
+  .abtn:hover{border-color:var(--design);color:var(--text)} .abtn.hot{border-color:var(--design);color:var(--design)}
+  .cap{margin-top:14px;padding:13px 15px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.7}
+  .cap b{color:var(--design)}
+  .controls{margin-top:16px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--build);cursor:pointer}
+  .readout{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14.5px;line-height:1.85;font-variant-numeric:tabular-nums}
+  .readout .big{font-size:18px;font-weight:800}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .steps{list-style:none;padding:0;margin:10px 0}
+  .steps li{padding:10px 14px;margin:7px 0;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:14.5px;line-height:1.6}
+  .steps li b{color:var(--design)}
+  /* 영상 + 연습문제 */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}.vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}.plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}.plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:500;color:var(--muted)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}.lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}.lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k design">회로이론 · DC 회로 해석 (핵심)</span>
+    <h1>테브난 정리는 왜 필요한가</h1>
+    <time>인터랙티브 · 15분 강의 · 2026.07.14</time>
+
+    <h2>1. 왜 배우나 — 오디오 회로에 꼬마전구 달기</h2>
+    <p>복잡한 <strong>오디오 앰프 회로</strong>가 있다고 합시다. 여기 어느 두 단자에 <strong>꼬마전구</strong> 하나를 달아 "얼마나 밝게 켜질까?"를 알고 싶습니다. 그러려면 전구에 <strong>걸리는 전압</strong>과 <strong>흐르는 전류</strong>를 알아야 하죠.</p>
+    <p>문제는, 전구를 <strong>10 Ω짜리로 바꾸면? 저항을 다른 걸로 갈아끼우면?</strong> 그때마다 그 거대한 회로 전체를 처음부터 다시 풀어야 한다는 겁니다. 너무 번거롭죠.</p>
+    <p><strong>테브난 정리</strong>는 이 고민을 없애줍니다. 전구가 <em>바라보는 쪽</em>의 회로가 아무리 복잡해도, 전구 입장에서는 결국 <strong>전압원 하나 + 저항 하나</strong>로 똑같이 보인다는 것입니다. 이 둘(<strong class="arc">V<sub>th</sub></strong>, <strong class="arc">R<sub>th</sub></strong>)만 한 번 구해두면, 전구를 어떤 걸로 갈아끼워도 <strong>공식 하나로 즉시</strong> 전류·전압·밝기를 계산할 수 있습니다.</p>
+    <p style="text-align:center;font-size:20px">복잡한 회로 &nbsp;→&nbsp; \(V_{th}\) (전압원) &nbsp;+&nbsp; \(R_{th}\) (저항) &nbsp;→&nbsp; 부하 연결</p>
+
+    <h2>2. 등가회로 구하는 절차 (예제로)</h2>
+    <p>예제: <strong>12 V</strong> 전원, <strong>3 Ω</strong>(직렬)과 <strong>6 Ω</strong>이 연결된 회로의 단자 <strong>a–b</strong>에 부하 \(R_L\)이 붙어 있습니다. 아래 버튼으로 단계를 넘겨 보세요.</p>
+
+    <div class="lab">
+      <div class="gwrap"><canvas id="stepC"></canvas></div>
+      <div class="btns">
+        <button class="abtn" data-s="0">① 원래 회로</button>
+        <button class="abtn" data-s="1">② 부하 분리</button>
+        <button class="abtn" data-s="2">③ 개방전압 V_th</button>
+        <button class="abtn" data-s="3">④ 전원 제거 → R_th</button>
+        <button class="abtn" data-s="4">⑤ 테브난 등가</button>
+      </div>
+      <div class="cap" id="stepCap"></div>
+    </div>
+
+    <ol class="steps">
+      <li><b>①→②</b> 관심 있는 <strong>부하 \(R_L\)을 떼어냅니다</strong>(분리). 단자 a–b가 열립니다(개방).</li>
+      <li><b>③ 개방전압 \(V_{th}\)</b> — 부하를 뗀 열린 단자 a–b에 걸리는 전압. 여기선 전류가 흐를 곳이 없으니 3 Ω에는 전압강하가 없고, 12 V가 3 Ω·6 Ω로 <strong>1 : 2</strong>로 나뉘어 6 Ω에 걸립니다: \(V_{th} = 12\cdot\dfrac{6}{3+6} = 8\text{ V}\).</li>
+      <li><b>④ 등가저항 \(R_{th}\)</b> — <strong>독립 전원을 제거</strong>(전압원은 단락). 그 상태에서 a–b로 들여다본 저항: 3 Ω과 6 Ω이 <strong>병렬</strong>이 되어 \(R_{th} = 3\,\Vert\,6 = \dfrac{3\cdot 6}{3+6} = 2\ \Omega\).</li>
+      <li><b>⑤ 테브난 등가</b> — 결국 이 회로는 <strong>\(V_{th}=8\text{ V}\) 전압원 + \(R_{th}=2\ \Omega\) 저항</strong>이 직렬로 있는 것과 완전히 같습니다. 여기에 부하만 다시 붙이면 끝.</li>
+    </ol>
+    <p class="note">※ 전원 제거 규칙: <strong>전압원 → 단락(0 Ω 선)</strong>, <strong>전류원 → 개방(끊음)</strong>. 종속전원이 없으면 이 방법으로 \(R_{th}\)를 바로 구할 수 있습니다.</p>
+
+    <h2>3. 꼬마전구 실험 — 부하를 바꿔 보기</h2>
+    <p>이제 테브난 등가(<strong>8 V + 2 Ω</strong>)에 <strong>꼬마전구(부하 \(R_L\))</strong>를 답니다. 슬라이더로 전구 저항을 바꾸면, 회로 전체를 다시 풀 필요 없이 <strong>공식 하나</strong>로 전류·전압·밝기가 즉시 나옵니다.</p>
+    <p style="text-align:center;font-size:19px">\(I = \dfrac{V_{th}}{R_{th}+R_L}\), &nbsp; \(V_L = I\cdot R_L\), &nbsp; \(P_L = I^2 R_L\)</p>
+
+    <div class="lab">
+      <div class="gwrap"><canvas id="bulbC"></canvas></div>
+      <div class="controls">
+        <div class="ctrl"><label>꼬마전구 저항 R<sub>L</sub> <b><span id="vRL">2.0</span> Ω</b></label><input id="sRL" type="range" min="0.3" max="12" step="0.1" value="2"></div>
+      </div>
+      <div class="readout" id="bulbOut"></div>
+      <div class="note">※ 전구가 가장 밝은 곳(최대 전력)은 \(R_L = R_{th} = 2\ \Omega\)일 때입니다 — 이것이 <strong>최대 전력 전달</strong>. 그보다 크거나 작으면 어두워집니다.</div>
+    </div>
+
+    <h2>4. 정리</h2>
+    <p>테브난 정리는 <strong>"부하가 바라보는 복잡한 회로 = 전압원 하나 + 저항 하나"</strong>로 요약하는 도구입니다. 절차는 ① 부하 분리 → ② 개방전압 \(V_{th}\) → ③ 전원 제거 후 \(R_{th}\) → ④ 둘을 직렬로. 한 번 구해두면 <strong>부하를 아무리 바꿔도</strong> \(I=V_{th}/(R_{th}+R_L)\) 하나로 끝납니다. 다음 강의는 이것과 짝을 이루는 <strong>노튼 등가</strong>입니다.</p>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>이 개념을 영상으로 설명합니다 (SimuLab 유튜브).</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 자유롭게 추가·순서 변경·교체할 수 있습니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap"><div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div><div class="plist" id="plist"></div></div>
+      <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+
+    <h2>연습 퀴즈</h2>
+    <p style="color:var(--muted)">배운 내용을 바로 확인해 보세요. 보기를 고르면 즉시 채점·해설이 나옵니다.</p>
+    <div id="quizBox"></div>
+
+    <nav class="lnav">
+      <a class="pv" href="/post-kclkvl-interactive.html"><span class="dir">← 이전 강의</span>KCL·KVL로 회로 분석하기</a>
+      <a class="nx" href="/teach-circuits.html"><span class="dir">회로이론 목록 →</span>다음 강의: 노튼 등가 (예정)</a>
+    </nav>
+    <p style="margin-top:28px"><a href="/teach-circuits.html">← 회로이론 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}window.dispatchEvent(new Event('themechg'));});
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function fitc(c){var dpr=Math.max(1,window.devicePixelRatio||1);var r=c.getBoundingClientRect();c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return {ctx:x,w:r.width,h:r.height};}
+
+// 상수: 12V, 3Ω(직렬), 6Ω → Vth=8, Rth=2
+const VS=12, RA=3, RB=6, VTH=8, RTH=2;
+
+// ================= 단계 회로 =================
+(function(){
+  const c=document.getElementById('stepC'); if(!c) return;
+  const caps=[
+    '<b>① 원래 회로</b> — 12 V 전원, 3 Ω(위·직렬), 6 Ω(가운데). 오른쪽 단자 a–b에 부하 R<sub>L</sub>이 붙어 있습니다. 직렬도 병렬도 아니라 한눈에 안 풀리죠.',
+    '<b>② 부하 분리</b> — 관심 대상인 R<sub>L</sub>을 떼어냅니다. 단자 a–b가 <b>열립니다(개방)</b>.',
+    '<b>③ 개방전압 V<sub>th</sub></b> — 열린 a–b엔 전류가 안 흐르니 3 Ω엔 강하가 없고, 12 V가 3:6 = 1:2로 나뉘어 6 Ω에 <b>8 V</b>가 걸립니다 → V<sub>th</sub> = 8 V.',
+    '<b>④ 전원 제거 → R<sub>th</sub></b> — 12 V 전압원을 <b>단락(선)</b>으로 바꾸고 a–b로 들여다보면 3 Ω과 6 Ω이 <b>병렬</b> → R<sub>th</sub> = 3∥6 = <b>2 Ω</b>.',
+    '<b>⑤ 테브난 등가</b> — 결국 <b>8 V + 2 Ω</b> 직렬. 여기에 부하를 다시 붙이면 어떤 부하든 바로 계산됩니다.'
+  ];
+  let step=0;
+  function draw(){
+    const {ctx,w,h}=fitc(c); ctx.clearRect(0,0,w,h);
+    const text=cssv('--text'),muted=cssv('--muted'),line=cssv('--line'),red='#d64b3c',blue=cssv('--design'),green=cssv('--teach');
+    const LW=460,LH=270; const W=x=>x*w/LW,H=y=>y*h/LH;
+    ctx.lineWidth=2; ctx.font='12px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    const wire=(x1,y1,x2,y2,col)=>{ctx.strokeStyle=col||text;ctx.beginPath();ctx.moveTo(W(x1),H(y1));ctx.lineTo(W(x2),H(y2));ctx.stroke();};
+    function resH(xc,y,lab,col){var L=46,x0=xc-L/2;ctx.strokeStyle=col||text;ctx.beginPath();ctx.moveTo(W(x0),H(y));var xx=x0,seg=L/6;for(var i=0;i<6;i++){xx+=seg;ctx.lineTo(W(xx-seg/2),H(y)+(i%2?6:-6));ctx.lineTo(W(xx),H(y));}ctx.stroke();ctx.fillStyle=col||muted;ctx.fillText(lab,W(xc),H(y)-14);}
+    function resV(x,yc,lab,col){var L=46,y0=yc-L/2;ctx.strokeStyle=col||text;ctx.beginPath();ctx.moveTo(W(x),H(y0));var yy=y0,seg=L/6;for(var i=0;i<6;i++){yy+=seg;ctx.lineTo(W(x)+(i%2?6:-6),H(yy-seg/2));ctx.lineTo(W(x),H(yy));}ctx.stroke();ctx.fillStyle=col||muted;ctx.textAlign='left';ctx.fillText(lab,W(x)+11,H(yc));ctx.textAlign='center';}
+    function batt(x,yc,lab){ctx.strokeStyle=text;ctx.beginPath();ctx.moveTo(W(x)-14,H(yc-7));ctx.lineTo(W(x)+14,H(yc-7));ctx.stroke();ctx.beginPath();ctx.moveTo(W(x)-7,H(yc+7));ctx.lineTo(W(x)+7,H(yc+7));ctx.stroke();ctx.fillStyle=red;ctx.font='bold 12.5px Pretendard';ctx.textAlign='right';ctx.fillText(lab,W(x)-20,H(yc));ctx.textAlign='center';ctx.font='12px Pretendard';}
+    function node(x,y,lab){ctx.fillStyle=text;ctx.beginPath();ctx.arc(W(x),H(y),3.2,0,7);ctx.fill();if(lab){ctx.fillStyle=blue;ctx.font='bold 12px Pretendard';ctx.fillText(lab,W(x)+11,H(y)-9);ctx.font='12px Pretendard';}}
+    // 좌표
+    var bx=55, top=60, bot=210, A=245, aX=345;
+    if(step<=3){
+      // 전원부
+      if(step===3){ wire(bx,top,bx,bot,green); ctx.fillStyle=green;ctx.font='bold 11px Pretendard';ctx.fillText('단락',W(bx)-20,H(135));ctx.font='12px Pretendard'; }
+      else { wire(bx,top,bx,top+18); batt(bx,135,VS+'V'); wire(bx,bot-18,bx,bot); }
+      // 상단: 3Ω
+      wire(bx,top,110,top); resH(140,top,RA+'Ω', step===3?green:null); wire(170,top,A,top);
+      // 6Ω 세로
+      wire(A,top,A,top+22); resV(A,135,RB+'Ω', step===3?green:null); wire(A,bot-22,A,bot);
+      // 하단
+      wire(bx,bot,A,bot);
+      // a-b 단자로 나가는 배선
+      wire(A,top,aX,top); wire(A,bot,aX,bot);
+      node(aX,top,'a'); node(aX,bot,'b');
+      // 부하
+      if(step===0){ resV(aX,135,'R_L',null); }
+      else { ctx.strokeStyle=line; ctx.setLineDash([5,4]); wire(aX,top+8,aX,bot-8,line); ctx.setLineDash([]);
+             ctx.fillStyle=muted;ctx.font='11px Pretendard';ctx.fillText('(분리)',W(aX)+2,H(135)); }
+      // 개방전압 표시
+      if(step===2){ ctx.strokeStyle=red;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W(aX)-16,H(top+14));ctx.lineTo(W(aX)-16,H(bot-14));ctx.stroke();
+        ctx.fillStyle=red;ctx.font='bold 14px Pretendard';ctx.fillText('V_th = 8 V',W(aX)-58,H(135));ctx.font='12px Pretendard'; }
+      if(step===3){ ctx.fillStyle=blue;ctx.font='bold 14px Pretendard';ctx.fillText('R_th = 3∥6 = 2 Ω',W(280),H(bot+30));ctx.font='12px Pretendard'; }
+    } else {
+      // 테브난 등가
+      var ex=120;
+      wire(ex,top,ex,top+18); batt(ex,135,'V_th=8V'); wire(ex,bot-18,ex,bot);
+      wire(ex,top,190,top); resH(225,top,'R_th=2Ω',blue); wire(260,top,aX,top);
+      wire(ex,bot,aX,bot);
+      node(aX,top,'a'); node(aX,bot,'b');
+      resV(aX,135,'R_L',null);
+      ctx.fillStyle=green;ctx.font='bold 13px Pretendard';ctx.fillText('테브난 등가회로',W(220),H(bot+30));ctx.font='12px Pretendard';
+    }
+  }
+  const wrap=c.closest('.lab');
+  wrap.querySelectorAll('.abtn[data-s]').forEach(function(b){b.addEventListener('click',function(){step=+b.dataset.s;
+    wrap.querySelectorAll('.abtn[data-s]').forEach(function(x){x.classList.toggle('hot',+x.dataset.s===step);});
+    document.getElementById('stepCap').innerHTML=caps[step]; draw();});});
+  document.getElementById('stepCap').innerHTML=caps[0];
+  wrap.querySelector('.abtn[data-s="0"]').classList.add('hot');
+  window.addEventListener('resize',draw);window.addEventListener('themechg',draw);window.addEventListener('load',draw);draw();
+})();
+
+// ================= 꼬마전구 실험 =================
+(function(){
+  const c=document.getElementById('bulbC'); if(!c) return;
+  var RL=2, ph=0, last=performance.now();
+  const sRL=document.getElementById('sRL'),vRL=document.getElementById('vRL'),out=document.getElementById('bulbOut');
+  function calc(){var I=VTH/(RTH+RL);return {I:I,VL:I*RL,P:I*I*RL};}
+  const Pmax=VTH*VTH/(4*RTH); // 8W at RL=2
+  function draw(){
+    const {ctx,w,h}=fitc(c); ctx.clearRect(0,0,w,h);
+    const text=cssv('--text'),muted=cssv('--muted'),line=cssv('--line'),red='#d64b3c',blue=cssv('--design'),amber=cssv('--build'),purp='#7c3aed';
+    const LW=460,LH=270; const W=x=>x*w/LW,H=y=>y*h/LH;
+    var s=calc(), bright=Math.max(0,Math.min(1,s.P/Pmax));
+    ctx.lineWidth=2;ctx.font='12px Pretendard';ctx.textAlign='center';ctx.textBaseline='middle';
+    const wire=(x1,y1,x2,y2)=>{ctx.strokeStyle=text;ctx.beginPath();ctx.moveTo(W(x1),H(y1));ctx.lineTo(W(x2),H(y2));ctx.stroke();};
+    var bx=60,top=60,bot=210,bulbX=350;
+    // 전원(8V)
+    ctx.strokeStyle=text;ctx.beginPath();ctx.moveTo(W(bx)-14,H(128));ctx.lineTo(W(bx)+14,H(128));ctx.stroke();ctx.beginPath();ctx.moveTo(W(bx)-7,H(142));ctx.lineTo(W(bx)+7,H(142));ctx.stroke();
+    ctx.fillStyle=red;ctx.font='bold 12.5px Pretendard';ctx.textAlign='right';ctx.fillText('V_th=8V',W(bx)-20,H(135));ctx.textAlign='center';ctx.font='12px Pretendard';
+    wire(bx,top,bx,120); wire(bx,150,bx,bot);
+    // 상단 배선 + Rth
+    wire(bx,top,150,top);
+    (function(){var L=46,x0=185-L/2;ctx.strokeStyle=blue;ctx.beginPath();ctx.moveTo(W(x0),H(top));var xx=x0,seg=L/6;for(var i=0;i<6;i++){xx+=seg;ctx.lineTo(W(xx-seg/2),H(top)+(i%2?6:-6));ctx.lineTo(W(xx),H(top));}ctx.stroke();ctx.fillStyle=blue;ctx.fillText('R_th=2Ω',W(185),H(top)-14);})();
+    wire(220,top,bulbX,top);
+    // 하단
+    wire(bx,bot,bulbX,bot);
+    // 전구 (glow)
+    var by=135, R=26;
+    var g=ctx.createRadialGradient(W(bulbX),H(by),2,W(bulbX),H(by),W(R)*2.4);
+    g.addColorStop(0,'rgba(255,214,90,'+(0.15+0.85*bright)+')');g.addColorStop(1,'rgba(255,214,90,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(W(bulbX),H(by),W(R)*2.4,0,7);ctx.fill();
+    wire(bulbX,top,bulbX,by-R); wire(bulbX,by+R,bulbX,bot);
+    ctx.strokeStyle=text;ctx.lineWidth=2;ctx.beginPath();ctx.arc(W(bulbX),H(by),W(R),0,7);ctx.stroke();
+    ctx.fillStyle='rgba(255,214,90,'+(0.2+0.8*bright)+')';ctx.beginPath();ctx.arc(W(bulbX),H(by),W(R)-2,0,7);ctx.fill();
+    // 필라멘트
+    ctx.strokeStyle='rgba(180,120,20,'+(0.5+0.5*bright)+')';ctx.lineWidth=2;ctx.beginPath();
+    ctx.moveTo(W(bulbX)-9,H(by+6));ctx.lineTo(W(bulbX)-4,H(by-6));ctx.lineTo(W(bulbX),H(by+6));ctx.lineTo(W(bulbX)+4,H(by-6));ctx.lineTo(W(bulbX)+9,H(by+6));ctx.stroke();
+    ctx.fillStyle=muted;ctx.font='11px Pretendard';ctx.fillText('R_L (꼬마전구)',W(bulbX),H(bot)-2+18);
+    // 전류 점
+    var n=Math.max(3,Math.min(10,Math.round(2+s.I*1.6)));
+    var pathPts=[[bx,120],[bx,top],[bulbX,top],[bulbX,by-R]]; // 대략 상단 경로만 표시
+    function seg(x1,y1,x2,y2){for(var k=0;k<n;k++){var f=((ph+k/n)%1+1)%1;var x=x1+(x2-x1)*f,y=y1+(y2-y1)*f;ctx.fillStyle=purp;ctx.beginPath();ctx.arc(W(x),H(y),2.6,0,7);ctx.fill();}}
+    seg(150,top,bulbX,top); seg(bulbX,bot,bx,bot);
+    // readout
+    vRL.textContent=RL.toFixed(1);
+    var near=Math.abs(RL-RTH)<0.25;
+    out.innerHTML='<span class="big">전류 I = <span style="color:#7c3aed">'+s.I.toFixed(2)+' A</span> · 전구 전압 V_L = <span style="color:'+blue+'">'+s.VL.toFixed(2)+' V</span></span>'+
+      '<br>전구 전력(밝기) P = <span style="color:'+amber+';font-weight:800">'+s.P.toFixed(2)+' W</span> / 최대 '+Pmax.toFixed(1)+' W'+
+      (near?' &nbsp;<b style="color:'+amber+'">← 최대 밝기! (R_L = R_th = 2Ω, 최대 전력 전달)</b>':'')+
+      '<br><span style="color:var(--muted);font-size:13px">테브난 등가(8V+2Ω)에 전구만 바꿔 끼우면 공식 하나로 즉시 계산됩니다.</span>';
+  }
+  function tick(now){var dt=(now-last)/1000;last=now;var s=calc();ph=(ph+dt*(0.15+s.I*0.12))%1;draw();requestAnimationFrame(tick);}
+  sRL.addEventListener('input',function(e){RL=+e.target.value;});
+  window.addEventListener('resize',draw);window.addEventListener('themechg',draw);window.addEventListener('load',draw);
+  requestAnimationFrame(tick);
+})();
+</script>
+
+<script>
+/* 연습문제 풀이 강의 목록 — { t:'제목', yt:'유튜브ID' } 로 추가 */
+const THEORY_YT=''; const LESSON_TITLE='테브난 정리는 왜 필요한가';
+const PRACTICE=[
+  // 예) { t:'테브난 등가 기본 예제', yt:'유튜브ID' },
+];
+(function(){
+  var plist=document.getElementById('plist'),player=document.getElementById('player'),theoryVid=document.getElementById('theoryVid'),plCnt=document.getElementById('plCnt');
+  if(!plist)return;
+  function embed(el,yt,title){ if(yt){el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';}
+    else{el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>';} }
+  embed(theoryVid,THEORY_YT,'이론 강의 · '+LESSON_TITLE);
+  function render(){ plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ embed(player,'','연습문제 영상 — 목록에 추가하세요');
+      plist.innerHTML='<div class="pcard"><div class="pt">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; } }
+  render();
+})();
+</script>
+
+<script>
+const QUIZ = [{"q": "테브난 등가에서 개방전압 V_th 는 무엇인가?", "a": ["부하를 단락시켰을 때 전류", "부하를 뗀 열린 단자 a–b의 전압", "전원의 내부저항", "부하에 걸리는 전압"], "correct": 1, "why": "V_th 는 부하를 분리(개방)했을 때 단자 a–b에 나타나는 전압입니다."}, {"q": "R_th 를 구할 때 독립 전압원은 어떻게 처리하는가?", "a": ["개방(끊는다)", "단락(선으로 잇는다)", "그대로 둔다", "2배로 키운다"], "correct": 1, "why": "전압원은 단락(0Ω), 전류원은 개방으로 두고 단자에서 본 저항이 R_th."}, {"q": "예제(12V·3Ω·6Ω)에서 V_th 와 R_th 는?", "a": ["V_th=12V, R_th=9Ω", "V_th=8V, R_th=2Ω", "V_th=4V, R_th=3Ω", "V_th=6V, R_th=6Ω"], "correct": 1, "why": "V_th=12·6/9=8V, R_th=3∥6=2Ω."}, {"q": "부하 전구가 가장 밝은(최대 전력) 조건은?", "a": ["R_L 이 아주 클 때", "R_L = R_th 일 때", "R_L = 0 일 때", "R_L 이 아주 작을 때"], "correct": 1, "why": "최대 전력 전달: R_L = R_th 일 때 부하 전력이 최대."}];
+(function(){
+  var box=document.getElementById('quizBox'); if(!box||typeof QUIZ==="undefined"||!QUIZ.length) return;
+  box.innerHTML = QUIZ.map(function(it,qi){
+    return '<div class="qz" data-qi="'+qi+'" style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0">'+
+      '<div style="font-weight:700;margin-bottom:10px">Q'+(qi+1)+'. '+it.q+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:7px">'+
+      it.a.map(function(opt,oi){return '<button class="qzopt" data-oi="'+oi+'" style="text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:10px;padding:10px 13px;font-size:14px;cursor:pointer">'+String.fromCharCode(65+oi)+'. '+opt+'</button>';}).join('')+
+      '</div><div class="qzfb" style="display:none;margin-top:10px;font-size:13.5px;line-height:1.6"></div></div>';
+  }).join('');
+  box.querySelectorAll('.qz').forEach(function(qz){
+    var qi=+qz.dataset.qi, it=QUIZ[qi], fb=qz.querySelector('.qzfb');
+    qz.querySelectorAll('.qzopt').forEach(function(b){ b.addEventListener('click',function(){
+      var oi=+b.dataset.oi, ok=oi===it.correct;
+      qz.querySelectorAll('.qzopt').forEach(function(x){ x.disabled=true; var xi=+x.dataset.oi;
+        if(xi===it.correct){ x.style.borderColor='var(--teach)'; x.style.background='color-mix(in srgb,var(--teach) 12%,transparent)'; }
+        else if(x===b){ x.style.borderColor='var(--write)'; x.style.background='color-mix(in srgb,var(--write) 12%,transparent)'; }
+        x.style.cursor='default';
+      });
+      fb.style.display='block';
+      fb.innerHTML=(ok?'<b style="color:var(--teach)">정답!</b> ':'<b style="color:var(--write)">아쉬워요.</b> 정답은 '+String.fromCharCode(65+it.correct)+'. ')+it.why;
+    }); });
+  });
+})();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "bd4a3f69291049bb831238c0b32223b5"}'></script>
+</body></html>
