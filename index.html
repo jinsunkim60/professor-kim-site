@@ -1,250 +1,32 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="light">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>김진선 · 만들어서 전하는 사람</title>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="가르치고, 설계하고, 만들고, 쓰는 일을 계속합니다."><title>김진선 · 만들어서 전하는 사람</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#fbfaf8; --surface:#ffffff; --text:#1a1a1a; --muted:#6b6b6b;
-    --line:#e7e4de; --line-soft:#f0eee9;
-    --teach:#0e8a7d; --design:#2563c9; --build:#c07b12; --write:#c04a6e;
-    --accent:var(--text);
-    --serif:'Nanum Myeongjo', serif;
-    --sans:'Pretendard', -apple-system, system-ui, sans-serif;
-    --max:1080px;
-  }
-  [data-theme="dark"]{
-    --bg:#100f0e; --surface:#191817; --text:#f2efe9; --muted:#a29d95;
-    --line:#2c2a27; --line-soft:#232120;
-    --teach:#2fd0bd; --design:#6ba2ff; --build:#e6ad4f; --write:#f2879f;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--text);font-family:var(--sans);
-    line-height:1.65;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
-  .muted{color:var(--muted)}
-
-  /* NAV */
-  header.nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 85%,transparent);
-    backdrop-filter:blur(12px);border-bottom:1px solid var(--line-soft)}
-  .nav-inner{max-width:var(--max);margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
-  .brand{font-weight:800;font-size:16px;letter-spacing:-.02em}
-  .brand span{color:var(--muted);font-weight:500}
-  .nav-links{display:flex;gap:26px;align-items:center;font-size:14.5px;font-weight:500}
-  .nav-links a{color:var(--muted);transition:color .2s}
-  .nav-links a:hover{color:var(--text)}
-  .theme-btn{background:none;border:1px solid var(--line);border-radius:100px;
-    width:34px;height:34px;cursor:pointer;color:var(--text);font-size:15px;display:grid;place-items:center;transition:.2s}
-  .theme-btn:hover{border-color:var(--muted)}
-  @media(max-width:720px){.nav-links a:not(.pill){display:none}}
-
-  /* HERO */
-  .hero{padding:96px 0 72px}
-  .eyebrow{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:26px}
-  .hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(42px,7vw,78px);
-    line-height:1.1;letter-spacing:-.02em;margin-bottom:28px}
-  .hero .lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:560px;margin-bottom:14px}
-  .hero .sub{font-size:15px;color:var(--muted);margin-bottom:36px}
-  .cta{display:inline-flex;align-items:center;gap:8px;background:var(--text);color:var(--bg);
-    padding:13px 24px;border-radius:100px;font-weight:600;font-size:15px;transition:.2s}
-  .cta:hover{opacity:.85;transform:translateY(-1px)}
-  .cta.ghost{background:transparent;color:var(--text);border:1px solid var(--line);margin-left:10px}
-
-  /* PILLARS */
-  section{padding:64px 0}
-  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:32px;gap:16px}
-  .sec-head h2{font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .sec-head a{font-size:14px;color:var(--muted);font-weight:500}
-  .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-  @media(max-width:860px){.pillars{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:460px){.pillars{grid-template-columns:1fr}}
-  .pillar{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 22px 24px;
-    transition:.25s;position:relative;overflow:hidden}
-  .pillar:hover{transform:translateY(-4px);border-color:var(--pc);box-shadow:0 12px 30px -18px var(--pc)}
-  .pillar .num{font-family:var(--serif);font-size:14px;color:var(--pc);font-weight:700;opacity:.8}
-  .pillar h3{font-size:22px;margin:14px 0 8px;letter-spacing:-.01em}
-  .pillar p{font-size:14px;color:var(--muted);line-height:1.55}
-  .pillar .bar{position:absolute;left:0;top:0;height:100%;width:4px;background:var(--pc)}
-  .p1{--pc:var(--teach)} .p2{--pc:var(--design)} .p3{--pc:var(--build)} .p4{--pc:var(--write)}
-
-  /* FEATURED */
-  .featured{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:clamp(30px,5vw,56px)}
-  .featured .tag{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--write);font-weight:700}
-  .featured h3{font-family:var(--serif);font-weight:800;font-size:clamp(26px,4vw,40px);line-height:1.22;margin:16px 0 20px;letter-spacing:-.01em}
-  .featured p{font-size:16.5px;color:var(--muted);max-width:640px;margin-bottom:26px}
-  .read{display:inline-flex;gap:7px;font-weight:600;font-size:15px;color:var(--text);border-bottom:1.5px solid var(--text);padding-bottom:3px}
-
-  /* LATEST */
-  .latest-list{display:grid;gap:2px}
-  .item{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;
-    padding:20px 6px;border-top:1px solid var(--line-soft);transition:.2s}
-  .item:hover{background:var(--surface);padding-left:16px;padding-right:16px;border-radius:12px}
-  .item .k{font-size:12px;font-weight:700;letter-spacing:.05em;padding:4px 10px;border-radius:100px;white-space:nowrap}
-  .k.teach{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
-  .k.design{color:var(--design);background:color-mix(in srgb,var(--design) 14%,transparent)}
-  .k.build{color:var(--build);background:color-mix(in srgb,var(--build) 14%,transparent)}
-  .k.write{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
-  .item h4{font-size:17px;font-weight:600;letter-spacing:-.01em}
-  .item .date{font-size:13.5px;color:var(--muted);white-space:nowrap}
-  @media(max-width:560px){.item{grid-template-columns:auto 1fr}.item .date{display:none}}
-
-  /* ABOUT */
-  .about{display:grid;grid-template-columns:1.2fr 1fr;gap:48px;align-items:start}
-  @media(max-width:760px){.about{grid-template-columns:1fr;gap:28px}}
-  .about h2{font-family:var(--serif);font-size:32px;font-weight:800;margin-bottom:6px}
-  .about .en{font-size:13px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:22px}
-  .about p{color:var(--muted);font-size:16px;line-height:1.75}
-  .stats{display:grid;gap:22px}
-  .stat{border-left:2px solid var(--line);padding-left:16px}
-  .stat b{font-family:var(--serif);font-size:30px;font-weight:800;display:block;line-height:1}
-  .stat span{font-size:13.5px;color:var(--muted)}
-
-  /* FOOTER */
-  footer{border-top:1px solid var(--line);padding:44px 0 60px;margin-top:40px}
-  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-  .foot .links{display:flex;gap:22px;font-size:14.5px;font-weight:500}
-  .foot .links a{color:var(--muted)}.foot .links a:hover{color:var(--text)}
-  .foot .cr{font-size:13.5px;color:var(--muted)}
-
-  .banner{background:color-mix(in srgb,var(--build) 12%,transparent);border:1px dashed color-mix(in srgb,var(--build) 45%,transparent);
-    border-radius:12px;padding:12px 18px;font-size:13.5px;color:var(--muted);text-align:center;margin:20px auto 0;max-width:var(--max)}
-  .banner b{color:var(--build)}
-</style>
-</head>
-<body>
-
-
-<header class="nav">
-  <div class="nav-inner">
-    <a class="brand" href="#">김진선 <span>· Jinsun Kim</span></a>
-    <nav class="nav-links">
-      <a href="#teach">가르치다</a>
-      <a href="#design">설계하다</a>
-      <a href="#build">만들다</a>
-      <a href="#write">쓰다</a>
-      <a href="#materials">자료실</a>
-      <a href="#qna">Q&A</a>
-      <a href="#about">소개</a>
-      <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
-    </nav>
-  </div>
-</header>
-
-<main class="wrap">
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="eyebrow">Maker · Teacher · Engineer</div>
-    <h1>만들어서<br>전하는 사람</h1>
-    <p class="lead">가르치고, 설계하고, 만들고, 쓰는 일을 계속합니다. 학기가 끝나면 사라지던 것들을, 이제 내 이름으로 남깁니다.</p>
-    <p class="sub">전기전자공학 박사 · 전 유한대학교 교수 · TU-Berlin Dr.-Ing.</p>
-    <div>
-      <a class="cta" href="#write">첫 번째 글 읽기 →</a>
-      <a class="cta ghost" href="#about">소개</a>
-    </div>
-  </section>
-
-  <!-- PILLARS -->
-  <section id="teach" style="padding-top:24px">
-    <div class="sec-head"><h2>네 가지 축</h2></div>
-    <div class="pillars">
-      <a class="pillar p1"><span class="bar"></span><div class="num">01</div><h3>가르치다</h3><p>SimuLab 유튜브 채널과 전기전자공학 강의 자료</p></a>
-      <a class="pillar p2" id="design"><span class="bar"></span><div class="num">02</div><h3>설계하다</h3><p>SRM 모터 · 회로 설계 · MATLAB 시뮬레이션</p></a>
-      <a class="pillar p3" id="build"><span class="bar"></span><div class="num">03</div><h3>만들다</h3><p>트레이딩 봇 · 코드 · GitHub 프로젝트</p></a>
-      <a class="pillar p4" id="write"><span class="bar"></span><div class="num">04</div><h3>쓰다</h3><p>에세이 · 영성 기록 · 묵상과 성찰</p></a>
-    </div>
-  </section>
-
-  <!-- FEATURED -->
-  <section>
-    <div class="sec-head"><h2>대표 에세이</h2><a href="#">모두 보기 →</a></div>
-    <article class="featured">
-      <div class="tag">Featured Essay · 2026.05</div>
-      <h3>만들어서 전하는 사람,<br>그 길 위에서</h3>
-      <p>가르치고, 설계하고, 만들고, 쓰는 것 — 이 네 가지에는 공통점이 있다. 모두 누군가에게 전달하는 일이라는 것. 쌓이는 것만이 남는다.</p>
-      <a class="read" href="#">이어서 읽기 →</a>
-    </article>
-  </section>
-
-  <!-- LATEST -->
-  <section>
-    <div class="sec-head"><h2>최근 작업</h2><a href="#">모두 보기 →</a></div>
-    <div class="latest-list">
-      <a class="item"><span class="k teach">가르치다</span><h4>EP01 · 허수 j는 회전이다 — 인터랙티브 강의</h4><span class="date">2026.06.28</span></a>
-      <a class="item"><span class="k build">만들다</span><h4>Grid Compounder V3 — 회로C 신호 로거 가동</h4><span class="date">2026.06.15</span></a>
-      <a class="item"><span class="k design">설계하다</span><h4>Outer Rotor SRM — 토크·각도 특성 MATLAB 시뮬레이션</h4><span class="date">2026.05.30</span></a>
-      <a class="item"><span class="k write">쓰다</span><h4>만들어서 전하는 사람, 그 길 위에서</h4><span class="date">2026.05.12</span></a>
-    </div>
-  </section>
-
-  <!-- MATERIALS -->
-  <section id="materials">
-    <div class="sec-head"><h2>자료실 · 강의자료</h2><a href="#">전체 자료 →</a></div>
-    <div class="latest-list">
-      <a class="item"><span class="k design">회로이론</span><h4>3주차 · 페이저와 임피던스 — 강의 슬라이드 (PDF)</h4><span class="date">↓ 다운로드</span></a>
-      <a class="item"><span class="k teach">신호와 시스템</span><h4>푸리에 변환 예제 모음 + MATLAB 코드 (ZIP)</h4><span class="date">↓ 다운로드</span></a>
-      <a class="item"><span class="k design">전기기기</span><h4>SRM 토크 해석 노트 (PDF)</h4><span class="date">↓ 다운로드</span></a>
-    </div>
-    <p class="muted" style="font-size:13.5px;margin-top:16px">교수님이 자료를 올리면 방문자는 열람·다운로드합니다. (예시 항목)</p>
-  </section>
-
-  <!-- Q&A -->
-  <section id="qna">
-    <div class="sec-head"><h2>Q&A · 질문 게시판</h2><a href="#">게시판 열기 →</a></div>
-    <div class="latest-list">
-      <a class="item"><span class="k write">답변완료</span><h4>페이저 표기에서 실효값과 최댓값 중 어느 걸 쓰나요?</h4><span class="date">답변 2</span></a>
-      <a class="item"><span class="k build">답변대기</span><h4>Grid Compounder 회로C 신호 로거 로그 위치가 어디인가요?</h4><span class="date">답변 0</span></a>
-      <a class="item"><span class="k write">답변완료</span><h4>SRM 토크-각도 시뮬레이션 파라미터 공유 가능할까요?</h4><span class="date">답변 1</span></a>
-    </div>
-    <p class="muted" style="font-size:13.5px;margin-top:16px">방문자가 질문을 올리고 교수님이 답변합니다. 로그인은 구글·이메일. (동적 기능 · 예시)</p>
-  </section>
-
-  <!-- ABOUT -->
-  <section id="about">
-    <div class="about">
-      <div>
-        <h2>김진선</h2>
-        <div class="en">Kim Jinsun</div>
-        <p>독일 TU-Berlin에서 전기전자공학 박사(Dr.-Ing.)를 취득하고, 유한대학교에서 21년간 교수로 재직했습니다. Outer Rotor SRM 전공. 2025년 은퇴 후 SimuLab 유튜브 채널을 운영하며 가르치고, 설계하고, 만들고, 쓰는 일을 계속하고 있습니다.</p>
-      </div>
-      <div class="stats">
-        <div class="stat"><b>21년</b><span>유한대학교 교수 재직</span></div>
-        <div class="stat"><b>4가지</b><span>가르치다 · 설계하다 · 만들다 · 쓰다</span></div>
-        <div class="stat"><b>TU-Berlin</b><span>Dr.-Ing. · 전기전자공학</span></div>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <div class="wrap foot">
-    <div class="cr">© 2026 김진선 · 서울 송파</div>
-    <div class="links">
-      <a href="#">블로그</a>
-      <a href="#">YouTube · SimuLab</a>
-      <a href="#">GitHub</a>
-    </div>
-  </div>
-</footer>
-
-<script>
-  const btn=document.getElementById('themeBtn');
-  const root=document.documentElement;
-  try{const s=localStorage.getItem('theme');if(s)root.setAttribute('data-theme',s);}catch(e){}
-  btn.addEventListener('click',()=>{
-    const next=root.getAttribute('data-theme')==='dark'?'light':'dark';
-    root.setAttribute('data-theme',next);
-    try{localStorage.setItem('theme',next);}catch(e){}
-  });
-</script>
-</body>
-</html>
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+</head><body><header class="nav"><div class="nav-inner"><a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a><nav class="nav-links"><a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a><a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a><button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button></nav></div></header><main class="wrap">
+<section class="hero">
+  <div class="eyebrow">Maker · Teacher · Engineer</div>
+  <h1>만들어서<br>전하는 사람</h1>
+  <p class="lead">가르치고, 설계하고, 만들고, 쓰는 일을 계속합니다. 학기가 끝나면 사라지던 것들을, 이제 내 이름으로 남깁니다.</p>
+  <p class="sub">전기전자공학 박사 · 전 유한대학교 교수 · TU-Berlin Dr.-Ing.</p>
+  <div><a class="cta" href="/write.html">첫 번째 글 읽기 →</a><a class="cta ghost" href="/about.html">소개</a></div>
+</section>
+<section style="padding-top:24px"><div class="sec-head"><h2>네 가지 축</h2></div><div class="pillars"><a class="pillar p1" href="/teach.html"><span class="bar"></span><div class="num">01</div><h3>가르치다</h3><p>SimuLab 유튜브 채널과 전기전자공학 강의 자료</p></a><a class="pillar p2" href="/design.html"><span class="bar"></span><div class="num">02</div><h3>설계하다</h3><p>SRM 모터 · 회로 설계 · MATLAB 시뮬레이션</p></a><a class="pillar p3" href="/build.html"><span class="bar"></span><div class="num">03</div><h3>만들다</h3><p>트레이딩 봇 · 코드 · GitHub 프로젝트</p></a><a class="pillar p4" href="/write.html"><span class="bar"></span><div class="num">04</div><h3>쓰다</h3><p>에세이 · 영성 기록 · 묵상과 성찰</p></a></div></section>
+<section><div class="sec-head"><h2>대표 에세이</h2><a href="/write.html">모두 보기 →</a></div>
+  <a class="featured" href="/post-essay-jeonhaneun-saram.html"><div class="tag">Featured Essay · 2026.05.12</div>
+  <h3>만들어서 전하는 사람, 그 길 위에서</h3><p>가르치고, 설계하고, 만들고, 쓰는 것 — 이 네 가지에는 공통점이 있다. 모두 누군가에게 전달하는 일이라는 것.</p><span class="read">이어서 읽기 →</span></a></section>
+<section><div class="sec-head"><h2>최근 작업</h2><a href="/write.html">모두 보기 →</a></div><div class="latest-list"><a class="item" href="/post-imaginary-interactive.html"><span class="k design">인터랙티브</span><h4>허수 j는 회전이다 — 수의 확장에서 복소평면 회전까지 (×i = 90°)</h4><span class="date">2026.07.14</span></a><a class="item" href="/post-radian-interactive.html"><span class="k design">인터랙티브</span><h4>호도각(라디안)과 삼각함수 — 각도를 길이로 이해하기</h4><span class="date">2026.07.13</span></a><a class="item" href="/post-omega-sine-interactive.html"><span class="k design">인터랙티브</span><h4>원주파수 ω와 sin(ωt) — 원이 그리는 사인파</h4><span class="date">2026.07.13</span></a><a class="item" href="/post-kclkvl-interactive.html"><span class="k teach">인터랙티브</span><h4>KCL·KVL로 회로 분석하기 — 전원·저항을 바꾸며 푸는 회로 실험실</h4><span class="date">2026.07.13</span></a><a class="item" href="/post-aircon-interactive.html"><span class="k teach">인터랙티브</span><h4>에어컨은 어떻게 시원해질까 — 압력·온도로 보는 냉동 사이클</h4><span class="date">2026.07.13</span></a><a class="item" href="/post-vir-interactive.html"><span class="k teach">인터랙티브</span><h4>전압·전류·저항 — 전류가 흐르는 것을 직접 보는 기초 회로</h4><span class="date">2026.07.13</span></a><a class="item" href="/post-amplifier-interactive.html"><span class="k teach">인터랙티브</span><h4>소신호 증폭기는 어떻게 작동하나 — 회로도로 보는 증폭·반전·클리핑</h4><span class="date">2026.07.13</span></a><a class="item" href="/post-srm-interactive.html"><span class="k design">인터랙티브</span><h4>SRM의 토크는 어디서 나오는가 — 직접 돌려보는 토크·각도 데모</h4><span class="date">2026.07.13</span></a><a class="item" href="/post-grid-compounder-v3-logger.html"><span class="k build">만들다</span><h4>Grid Compounder V3 — 회로C 신호 로거 가동</h4><span class="date">2026.06.15</span></a><a class="item" href="/post-srm-torque-sim.html"><span class="k design">설계하다</span><h4>Outer Rotor SRM — 토크·각도 특성 MATLAB 시뮬레이션</h4><span class="date">2026.05.30</span></a><a class="item" href="/post-essay-jeonhaneun-saram.html"><span class="k write">쓰다</span><h4>만들어서 전하는 사람, 그 길 위에서</h4><span class="date">2026.05.12</span></a></div></section>
+<section><div class="sec-head"><h2>자료실 · 강의자료</h2><a href="/materials.html">전체 자료 →</a></div><div class="latest-list"><a class="item" href="/materials.html"><span class="k design">회로이론</span><h4>3주차 · 페이저와 임피던스 — 강의 슬라이드</h4><span class="dl">↓ 다운로드</span></a><a class="item" href="/materials.html"><span class="k design">신호와 시스템</span><h4>푸리에 변환 예제 모음 + MATLAB 코드</h4><span class="dl">↓ 다운로드</span></a><a class="item" href="/materials.html"><span class="k design">전기기기</span><h4>SRM 토크 해석 노트</h4><span class="dl">↓ 다운로드</span></a></div></section>
+<section><div class="sec-head"><h2>Q&amp;A · 질문 게시판</h2><a href="/qna.html">게시판 열기 →</a></div>
+  <p class="muted" style="font-size:15px">방문자가 질문을 올리고 교수님이 답변합니다. 읽기는 누구나, 질문 작성은 구글·이메일 로그인. (준비 중)</p></section>
+<section><div class="about"><div><h2>김진선</h2><div class="en">Kim Jinsun</div>
+  <p>독일 TU-Berlin에서 전기전자공학 박사(Dr.-Ing.)를 취득하고, 유한대학교에서 21년간 교수로 재직했습니다. 2025년 은퇴 후 SimuLab 유튜브 채널을 운영합니다.</p>
+  <a class="read" href="/about.html">더 알아보기 →</a></div>
+  <div class="stats"><div class="stat"><b>21년</b><span>유한대학교 교수 재직</span></div>
+  <div class="stat"><b>4가지</b><span>가르치다 · 설계하다 · 만들다 · 쓰다</span></div>
+  <div class="stat"><b>TU-Berlin</b><span>Dr.-Ing. · 전기전자공학</span></div></div></div></section>
+</main><footer><div class="foot"><div class="cr">© 2026 김진선 · 서울 송파</div><div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div></div></footer><script>document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}});</script></body></html>

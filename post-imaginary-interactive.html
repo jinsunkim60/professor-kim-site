@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="허수 j는 회전이다 — 수의 확장(자연수·0·음수·소수·무리수)에서 복소수로, ×i가 왜 90° 회전이 되는지 직접 돌려보는 인터랙티브 강의">
+<title>허수 j는 회전이다 (인터랙티브) · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  canvas{display:block;width:100%}
+  #lineStage{aspect-ratio:2.4/1;border-radius:12px;background:color-mix(in srgb,var(--teach) 5%,transparent)}
+  #planeStage{aspect-ratio:1.5/1;border-radius:12px;background:color-mix(in srgb,var(--design) 5%,transparent)}
+  .controls{margin-top:16px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--design);cursor:pointer}
+  .btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .abtn{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:100px;padding:6px 13px;font-size:13.5px;font-weight:700;cursor:pointer}
+  .abtn:hover{border-color:var(--design);color:var(--text)}
+  .abtn.hot{border-color:var(--design);color:var(--design)}
+  .abtn.play{margin-left:auto}
+  .cap{margin-top:14px;padding:13px 15px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.7}
+  .cap b{color:var(--teach)}
+  .readout{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14.5px;line-height:1.85;font-variant-numeric:tabular-nums}
+  .readout .big{font-size:18px;font-weight:800}
+  .rec{color:var(--design)} .imc{color:var(--teach)} .mag{color:var(--build)}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .steps{list-style:none;padding:0;margin:10px 0}
+  .steps li{padding:10px 14px;margin:7px 0;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:14.5px;line-height:1.6}
+  .steps li b{color:var(--design)}
+
+  /* --- 영상 + 연습문제 플레이리스트 --- */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}
+  .vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}
+  .plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;transition:.15s}
+  .pcard:hover{border-color:var(--teach)}
+  .pcard.on{border-color:var(--teach);background:color-mix(in srgb,var(--teach) 8%,transparent)}
+  .pcard .no{flex:none;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pcard.on .no{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+  .pcard .pt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  .pcard .badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+  .badge.rdy{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.soon{color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+  .badge.upd{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}
+  .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
+  .lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k design">회로이론 · AC·페이저 (핵심)</span>
+    <h1>허수 j는 회전이다</h1>
+    <time>인터랙티브 · 18분 강의 · 2026.07.14</time>
+    <p style="color:var(--muted);font-size:14px">공학에서는 전류 i와 헷갈리지 않게 허수 단위를 <strong>j</strong>로 씁니다. 수학의 <strong>i</strong>와 같은 것입니다(<code>j² = −1</code>). 이 글에서는 둘을 섞어 씁니다.</p>
+
+    <h2>1. 수는 필요할 때마다 확장되어 왔다</h2>
+    <p>숫자는 처음부터 완성된 게 아니라, <strong>기존 수로는 풀 수 없는 문제</strong>가 생길 때마다 새로 태어났습니다. 그 계보를 따라가 봅시다.</p>
+    <ul class="steps">
+      <li><b>자연수 (1, 2, 3 …)</b> — 손가락이 <strong>10개</strong>라서 10진법이 자리 잡았습니다. 시작은 "몇 개인가"를 <em>세기</em> 위한 수였습니다.</li>
+      <li><b>0</b> — "아무것도 없음"을 하나의 <em>수</em>로 인정. 자리(위치) 표기(10, 100)가 가능해집니다. <code>3 − 3 = ?</code> 에 답하려면 0이 필요합니다.</li>
+      <li><b>음수 (−1, −2 …)</b> — <code>x + 3 = 1</code> 의 답. 빚, 반대 방향, 기준 아래를 표현. 수직선의 <strong>왼쪽</strong>이 열립니다.</li>
+      <li><b>소수·분수 (0.5, ⅓ …)</b> — <code>1 ÷ 2 = ?</code> 정수 사이의 연속적인 양. 0과 1 사이를 촘촘히 메웁니다.</li>
+      <li><b>무리수 (√2, π …)</b> — <code>x² = 2</code> 의 답. 분수로 딱 떨어지지 않는 수(√로만 표현). 수직선을 <strong>빈틈없이</strong> 채웁니다.</li>
+    </ul>
+    <p>여기까지의 모든 수는 <strong>수직선(1차원) 위의 한 점</strong>으로 그릴 수 있습니다. 아래에서 단계별로 확장을 확인하세요.</p>
+
+    <div class="lab">
+      <div class="gwrap"><canvas id="lineStage"></canvas></div>
+      <div class="btns">
+        <button class="abtn" data-s="0">① 자연수</button>
+        <button class="abtn" data-s="1">② 0</button>
+        <button class="abtn" data-s="2">③ 음수</button>
+        <button class="abtn" data-s="3">④ 소수</button>
+        <button class="abtn" data-s="4">⑤ 무리수</button>
+        <button class="abtn" data-s="5">⑥ 복소수 →</button>
+      </div>
+      <div class="cap" id="lineCap"></div>
+    </div>
+
+    <h2>2. 벽에 부딪히다 — <code>x² = −1</code></h2>
+    <p>수직선 위의 어떤 수든 <strong>제곱하면 0 이상</strong>입니다. <code>(+2)² = 4</code>, <code>(−2)² = 4</code> — 음수를 제곱해도 양수가 되죠. 그래서 <strong><code>x² = −1</code> 은 수직선 위에 답이 없습니다.</strong> 무리수까지 다 채운 1차원 수직선으로는 도저히 만들 수 없는 답입니다.</p>
+    <p>역사는 여기서 재미있게 흘러갑니다. 16세기 이탈리아에서 <strong>카르다노·봄벨리</strong>가 3차방정식을 풀 때, <em>최종 답은 멀쩡한 실수인데 계산 도중에 <code>√(−1)</code> 이 꼭 나타나는</em> 상황을 만났습니다. "존재하지 않는 수"를 잠깐 빌려 쓰면 실제 답이 나왔던 거죠. 그래서 이름도 <strong>상상의 수(imaginary)</strong>가 됐습니다 — 처음엔 계산용 임시 도구였습니다.</p>
+
+    <h2>3. 새로운 차원으로 점프 — 허수축</h2>
+    <p><code>x² = −1</code> 의 답을 <strong class="imc">i</strong> 라 부르고(<code>i² = −1</code>), 수직선 위엔 자리가 없으니 <strong>수직선과 직각으로 만나는 새 축</strong>에 올려놓습니다. 이 순간 수는 1차원(선)에서 <strong>2차원(평면)</strong>으로 확장됩니다:</p>
+    <p style="text-align:center;font-size:19px"><code>z = a + b<span class="imc">i</span></code> &nbsp;=&nbsp; 가로 <span class="rec">a(실수)</span> + 세로 <span class="imc">b(허수)</span> &nbsp;→&nbsp; <strong>평면 위의 한 점</strong></p>
+    <p>이제 하나의 수가 <strong>크기(원점에서의 거리)와 방향(각도)</strong>을 동시에 담습니다. 바로 물리의 <strong>벡터</strong>를 숫자로 다루기에 딱 맞는 도구가 된 것이죠.</p>
+
+    <h2>4. 곱하면 90° 회전 — 우연인가, 필연인가?</h2>
+    <p>교수님이 궁금해하신 핵심입니다. 결론부터: <strong>우연이 아니라 곱셈 규칙의 필연적 귀결</strong>입니다. 세 줄로 증명됩니다.</p>
+    <ol class="steps">
+      <li><b>①</b> 수직선에서 <strong>× (−1)</strong> 은 수를 반대쪽으로 뒤집습니다. 1 → −1. 이것은 <strong>180° 회전</strong>과 똑같습니다.</li>
+      <li><b>②</b> 그런데 <code>i² = −1</code> 이므로, <strong>× i 를 두 번</strong> 하면 결국 × (−1) = <strong>180° 회전</strong>입니다.</li>
+      <li><b>③</b> "두 번 해서 180°가 되는 회전"은 한 번에 <strong>90°</strong>일 수밖에 없습니다. 따라서 <strong>× i = 90° 회전</strong>, 그리고 i는 실수축에서 90° 떨어진 <strong>세로축 위 (+1) 지점</strong>에 놓입니다.</li>
+    </ol>
+    <p>더 일반적으로, 복소수의 곱셈은 <strong>크기는 곱하고 각도는 더한다</strong>는 규칙을 따릅니다(분배법칙에서 자동으로 따라 나옵니다). i는 크기 1, 각도 90°이므로 "× i = 크기 그대로, 90° 돌리기"가 됩니다. 결코 억지로 정한 약속이 아닙니다.</p>
+    <p style="color:var(--muted);font-size:13.7px"><strong>역사의 순서</strong> — 허수는 <em>대수(계산)</em>로 먼저 태어났고(16세기), "90° 회전"이라는 <em>기하학적 의미</em>는 약 200년 뒤 <strong>베셀(1797)·아르강(1806)·가우스(1831)</strong>가 발견했습니다. 즉 계산 도구로 쓰다 보니 회전과 <strong>딱 들어맞았는데</strong>, 그 들어맞음은 우연이 아니라 곱셈 구조에 이미 들어 있던 논리였습니다. 가우스가 "허수(imaginary)"라는 이름이 편견을 준다며 <strong>복소수(complex number)</strong>라 부르자고 한 것도 이 때문입니다.</p>
+
+    <h2>5. 직접 돌려보기 — 복소평면 곱셈기</h2>
+    <p>벡터 <strong class="mag">z</strong> 의 크기와 각도를 정한 뒤, <strong>× i</strong> 를 눌러 90°씩 돌아가는 걸 확인하세요. <strong>× i 를 네 번</strong> 누르면 <code>1 → i → −1 → −i → 1</code> 로 제자리에 돌아옵니다(4번 = 360°). <code>× z</code> 는 "각도는 두 배, 크기는 제곱"을 보여줍니다.</p>
+
+    <div class="lab">
+      <div class="gwrap"><canvas id="planeStage"></canvas></div>
+      <div class="controls">
+        <div class="ctrl"><label>크기 |z| <b><span id="vMag">1.00</span></b></label><input id="sMag" type="range" min="0.3" max="1.5" step="0.01" value="1"></div>
+        <div class="ctrl"><label>각도 ∠ <b><span id="vAng">30</span>°</b></label><input id="sAng" type="range" min="0" max="359" step="1" value="30"></div>
+        <div class="btns">
+          <button class="abtn hot" id="bI">× i (90°)</button>
+          <button class="abtn" id="bN1">× (−1) (180°)</button>
+          <button class="abtn" id="bNI">× (−i) (−90°)</button>
+          <button class="abtn" id="bSq">× z (제곱)</button>
+          <button class="abtn play" id="bReset">↺ 리셋</button>
+        </div>
+      </div>
+      <div class="readout" id="planeOut"></div>
+      <div class="note">※ 회색 점 <strong>1 · i · −1 · −i</strong> 는 기준점입니다. × i 를 반복하면 벡터가 이 네 점을 90°씩 돌며 지나갑니다. 크기(주황)는 그대로, 각도만 바뀝니다.</div>
+    </div>
+
+    <h2>6. 크기와 방향을 한 수로 — 페이저로 이어진다</h2>
+    <p>복소수는 <code>z = a + b i = r(cos θ + i·sin θ) = r∠θ</code> 로, <strong>크기 r 과 위상 θ</strong>를 한 번에 담습니다(오일러 공식 <code>e^{iθ} = cos θ + i·sin θ</code>). 교류 전압·전류를 "크기와 위상"으로 나타낸 것이 바로 <strong>페이저</strong>이고, "× j = 90° 회전"은 미분·적분이 90° 위상차로 나타나는 이유가 됩니다. 앞 강의의 <strong>라디안(2π)</strong>·<strong>ω = 2πf</strong>·<strong>sin(ωt)</strong>가 여기서 하나로 합쳐집니다.</p>
+
+    <h2>7. 정리</h2>
+    <p>수는 못 푸는 문제를 만날 때마다 확장됐고(자연수→0→음수→소수→무리수), <code>x² = −1</code> 이라는 벽 앞에서 <strong>새 차원(허수축)</strong>으로 점프했습니다. 그 결과 수는 크기와 방향을 가진 <strong>평면의 점</strong>이 되었고, <strong>× i = 90° 회전</strong>은 우연이 아니라 곱셈 규칙(각도는 더한다)의 필연입니다. 그래서 복소수는 물리의 벡터·파형을 다루는 자연스러운 언어가 됩니다.</p>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>이 개념을 영상으로 설명합니다 (SimuLab 유튜브).</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 <strong>자유롭게 추가·순서 변경·교체·업데이트</strong>할 수 있습니다. 문제를 누르면 위 플레이어에서 바로 재생됩니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap">
+        <div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+    <nav class="lnav"><a class="pv" href="/post-omega-sine-interactive.html"><span class="dir">← 이전 강의</span>원주파수 ω와 sin(ωt)</a><span style="flex:1"></span></nav>
+
+    <p style="margin-top:36px"><a href="/teach-circuits.html">← 회로이론 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}window.dispatchEvent(new Event('themechg'));});
+
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function fitc(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const x=c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); return {ctx:x,w:r.width,h:r.height}; }
+
+// ================= 1) 수직선 확장 =================
+(function(){
+  const c=document.getElementById('lineStage'); if(!c) return;
+  const caps=[
+    '<b>① 자연수</b> — 손가락 10개에서 온 10진법. 오른쪽으로 1, 2, 3 … 개수를 세는 수.',
+    '<b>② 0</b> — "없음"을 수로. 3 − 3 = 0. 자리 표기(10, 100)의 바탕이 됩니다.',
+    '<b>③ 음수</b> — 수직선의 왼쪽이 열립니다. x + 3 = 1 → x = −2. 방향·빚·기준 아래.',
+    '<b>④ 소수·분수</b> — 정수 사이를 메웁니다. 0.5, 1.5 … 1 ÷ 2 = 0.5.',
+    '<b>⑤ 무리수</b> — √2 ≈ 1.41, π ≈ 3.14. 분수로 안 떨어지는 수. 수직선을 빈틈없이 채움.',
+    '<b>⑥ 복소수로 점프</b> — x² = −1 은 이 선 위에 답이 없습니다. 선과 직각인 새 축(i)으로 올라가 <span style="color:var(--build)">평면</span>이 됩니다.'
+  ];
+  let stage=0;
+  function draw(){
+    const {ctx,w,h}=fitc(c); ctx.clearRect(0,0,w,h);
+    const text=cssv('--text'), muted=cssv('--muted'), line=cssv('--line'), blue=cssv('--design'), teal=cssv('--teach'), amber=cssv('--build'), red='#d64b3c';
+    const LW=580, LH=242; const W=x=>x*w/LW, H=y=>y*h/LH;
+    const cx=290, ay=150, u=38;                    // 0 위치, 축 y, 한 칸 px
+    const X=n=>cx+n*u;
+    // 축
+    const left = stage>=2 ? -6 : 0;
+    ctx.strokeStyle=line; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(W(X(left)-14),H(ay)); ctx.lineTo(W(X(6)+14),H(ay)); ctx.stroke();
+    // 화살촉
+    ctx.fillStyle=line; ctx.beginPath(); ctx.moveTo(W(X(6)+14),H(ay)); ctx.lineTo(W(X(6)+6),H(ay-5)); ctx.lineTo(W(X(6)+6),H(ay+5)); ctx.fill();
+    // 정수 눈금 + 라벨
+    ctx.textAlign='center'; ctx.textBaseline='top'; ctx.font='12px Pretendard';
+    for(let n=left;n<=6;n++){ const on = (n>0) || (n===0&&stage>=1) || (n<0&&stage>=2);
+      ctx.strokeStyle = on?muted:line; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.moveTo(W(X(n)),H(ay-6)); ctx.lineTo(W(X(n)),H(ay+6)); ctx.stroke();
+      if(on){ ctx.fillStyle = (n===0? teal : text); ctx.fillText(n, W(X(n)), H(ay+10)); }
+      // 자연수 점
+      if(n>=1 && stage>=0){ ctx.fillStyle=blue; ctx.beginPath(); ctx.arc(W(X(n)),H(ay),4,0,7); ctx.fill(); }
+      if(n<0 && stage>=2){ ctx.fillStyle=muted; ctx.beginPath(); ctx.arc(W(X(n)),H(ay),3.5,0,7); ctx.fill(); }
+    }
+    if(stage>=1){ ctx.fillStyle=teal; ctx.beginPath(); ctx.arc(W(X(0)),H(ay),5,0,7); ctx.fill(); }
+    // 소수
+    if(stage>=3){ ctx.fillStyle=amber; [0.5,1.5,2.5,-1.5].forEach(v=>{ ctx.beginPath(); ctx.arc(W(X(v)),H(ay),3,0,7); ctx.fill(); });
+      ctx.fillStyle=amber; ctx.font='11px Pretendard'; ctx.fillText('0.5', W(X(0.5)), H(ay-24)); }
+    // 무리수
+    if(stage>=4){ ctx.fillStyle=red; [[Math.SQRT2,'√2'],[Math.PI,'π']].forEach(m=>{ ctx.beginPath(); ctx.arc(W(X(m[0])),H(ay),4,0,7); ctx.fill();
+      ctx.font='11.5px Pretendard'; ctx.fillText(m[1], W(X(m[0])), H(ay-26)); }); }
+    // 복소수 점프
+    if(stage>=5){
+      ctx.strokeStyle=amber; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(W(X(0)),H(ay-6*u/u)); ctx.lineTo(W(X(0)),H(ay-3.0*u)); ctx.stroke();
+      ctx.fillStyle=amber; ctx.beginPath(); ctx.moveTo(W(X(0)),H(ay-3.0*u)-9); ctx.lineTo(W(X(0)-5),H(ay-3.0*u)+1); ctx.lineTo(W(X(0)+5),H(ay-3.0*u)+1); ctx.fill();
+      // i 점
+      ctx.fillStyle=teal; ctx.beginPath(); ctx.arc(W(X(0)),H(ay-1.0*u),5,0,7); ctx.fill();
+      ctx.font='bold 13px Pretendard'; ctx.textAlign='left'; ctx.fillText('i', W(X(0)+9), H(ay-1.0*u-2));
+      ctx.textAlign='center'; ctx.fillStyle=amber; ctx.font='11.5px Pretendard'; ctx.fillText('허수축 (새 차원)', W(X(0)), H(ay-3.0*u-8));
+      // 90° 회전 호살표: 1 → i
+      ctx.strokeStyle=red; ctx.lineWidth=1.8; ctx.beginPath(); ctx.arc(W(X(0)),H(ay),W(1.0*u),0,-Math.PI/2,true); ctx.stroke();
+    }
+  }
+  document.querySelectorAll('#lineStage').length;
+  const wrap=c.closest('.lab');
+  wrap.querySelectorAll('.abtn[data-s]').forEach(b=>b.addEventListener('click',()=>{ stage=+b.dataset.s;
+    wrap.querySelectorAll('.abtn[data-s]').forEach(x=>x.classList.toggle('hot', +x.dataset.s===stage));
+    document.getElementById('lineCap').innerHTML=caps[stage]; draw(); }));
+  document.getElementById('lineCap').innerHTML=caps[0];
+  wrap.querySelector('.abtn[data-s="0"]').classList.add('hot');
+  window.addEventListener('resize',draw); window.addEventListener('themechg',draw); window.addEventListener('load',draw); draw();
+})();
+
+// ================= 2) 복소평면 곱셈기 =================
+(function(){
+  const c=document.getElementById('planeStage'); if(!c) return;
+  const Z={ r:1, th:Math.PI/6 };
+  let anim=null;
+  const sMag=document.getElementById('sMag'), sAng=document.getElementById('sAng');
+  const vMag=document.getElementById('vMag'), vAng=document.getElementById('vAng'), out=document.getElementById('planeOut');
+  const norm=a=>((a%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+  function fmt(){ const a=Z.r*Math.cos(Z.th), b=Z.r*Math.sin(Z.th);
+    const bs = b>=0 ? '+ '+b.toFixed(2) : '− '+Math.abs(b).toFixed(2);
+    return {a,b, str:a.toFixed(2)+' '+bs+' i'}; }
+  function draw(){
+    const {ctx,w,h}=fitc(c); ctx.clearRect(0,0,w,h);
+    const text=cssv('--text'), muted=cssv('--muted'), line=cssv('--line'), blue=cssv('--design'), teal=cssv('--teach'), amber=cssv('--build'), red='#d64b3c';
+    const LW=560, LH=373; const W=x=>x*w/LW, H=y=>y*h/LH;
+    const cx=280, cy=182, u=78;                    // 원점, 1단위 px
+    const RX=x=>cx+x*u, RY=y=>cy-y*u;
+    // 격자/축
+    ctx.strokeStyle=line; ctx.lineWidth=1;
+    for(let g=-2;g<=2;g++){ ctx.beginPath(); ctx.moveTo(W(RX(g)),H(RY(-2.1))); ctx.lineTo(W(RX(g)),H(RY(2.1))); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(W(RX(-2.6)),H(RY(g))); ctx.lineTo(W(RX(2.6)),H(RY(g))); ctx.stroke(); }
+    // 단위원
+    ctx.strokeStyle=muted; ctx.setLineDash([3,4]); ctx.lineWidth=1; ctx.beginPath(); ctx.arc(W(RX(0)),H(RY(0)),W(u),0,7); ctx.stroke(); ctx.setLineDash([]);
+    // 주축
+    ctx.strokeStyle=blue; ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(W(RX(-2.6)),H(RY(0))); ctx.lineTo(W(RX(2.6)),H(RY(0))); ctx.stroke();
+    ctx.strokeStyle=teal; ctx.beginPath(); ctx.moveTo(W(RX(0)),H(RY(-2.1))); ctx.lineTo(W(RX(0)),H(RY(2.1))); ctx.stroke();
+    ctx.fillStyle=blue; ctx.font='12px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('실수축 (Re)', W(RX(2.6)-2)-58, H(RY(0)-14));
+    ctx.fillStyle=teal; ctx.textAlign='center'; ctx.fillText('허수축 (Im)', W(RX(0)), H(RY(2.1))-2);
+    // 기준점 1, i, -1, -i
+    const refs=[[1,0,'1'],[0,1,'i'],[-1,0,'−1'],[0,-1,'−i']];
+    ctx.fillStyle=muted; ctx.font='12px Pretendard';
+    refs.forEach(p=>{ ctx.beginPath(); ctx.arc(W(RX(p[0])),H(RY(p[1])),3.5,0,7); ctx.fill();
+      ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(p[2], W(RX(p[0]))+6, H(RY(p[1]))-8); });
+    // 각도 호
+    const a=Z.r*Math.cos(Z.th), b=Z.r*Math.sin(Z.th);
+    ctx.strokeStyle=red; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(W(RX(0)),H(RY(0)),W(u*0.32),0,-Z.th,Z.th>0?true:false); ctx.stroke();
+    // 투영 (a, b)
+    ctx.strokeStyle=blue; ctx.setLineDash([4,3]); ctx.lineWidth=1.3; ctx.beginPath(); ctx.moveTo(W(RX(a)),H(RY(b))); ctx.lineTo(W(RX(a)),H(RY(0))); ctx.stroke();
+    ctx.strokeStyle=teal; ctx.beginPath(); ctx.moveTo(W(RX(a)),H(RY(b))); ctx.lineTo(W(RX(0)),H(RY(b))); ctx.stroke(); ctx.setLineDash([]);
+    // 벡터 z
+    ctx.strokeStyle=amber; ctx.lineWidth=3.4; ctx.beginPath(); ctx.moveTo(W(RX(0)),H(RY(0))); ctx.lineTo(W(RX(a)),H(RY(b))); ctx.stroke();
+    // 화살촉
+    const ang=Math.atan2(RY(b)-RY(0), RX(a)-RX(0)); const hl=10;
+    ctx.fillStyle=amber; ctx.beginPath(); ctx.moveTo(W(RX(a)),H(RY(b)));
+    ctx.lineTo(W(RX(a))-hl*Math.cos(ang-0.4),H(RY(b))-hl*Math.sin(ang-0.4));
+    ctx.lineTo(W(RX(a))-hl*Math.cos(ang+0.4),H(RY(b))-hl*Math.sin(ang+0.4)); ctx.fill();
+    ctx.fillStyle=amber; ctx.beginPath(); ctx.arc(W(RX(a)),H(RY(b)),4,0,7); ctx.fill();
+    ctx.font='bold 13px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText('z', W(RX(a))+8, H(RY(b))-4);
+    // readout
+    const deg=Math.round(norm(Z.th)*180/Math.PI); const f=fmt();
+    vMag.textContent=Z.r.toFixed(2); vAng.textContent=deg;
+    out.innerHTML='<span class="big">z = <span class="mag">'+f.str+'</span></span> &nbsp;=&nbsp; 크기 <span class="mag">'+Z.r.toFixed(2)+'</span> ∠ <span style="color:#d64b3c">'+deg+'°</span>'+
+      '<br><span style="color:var(--muted);font-size:13px">실수부 a = '+f.a.toFixed(2)+' · 허수부 b = '+f.b.toFixed(2)+' · 곱셈은 크기는 곱하고 각도는 더합니다.</span>';
+  }
+  function animateTo(rMul, dth){
+    const r0=Z.r, th0=Z.th, r1=Z.r*rMul, th1=Z.th+dth, t0=performance.now(), dur=650;
+    anim={};
+    function stp(now){ let t=(now-t0)/dur; if(t>1)t=1; const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+      Z.r=r0+(r1-r0)*e; Z.th=th0+(th1-th0)*e; draw();
+      if(t<1){ requestAnimationFrame(stp); } else { anim=null; sMag.value=Z.r.toFixed(2); sAng.value=Math.round(norm(Z.th)*180/Math.PI); } }
+    requestAnimationFrame(stp);
+  }
+  sMag.addEventListener('input',e=>{ Z.r=+e.target.value; draw(); });
+  sAng.addEventListener('input',e=>{ Z.th=(+e.target.value)*Math.PI/180; draw(); });
+  document.getElementById('bI').addEventListener('click',()=>animateTo(1, Math.PI/2));
+  document.getElementById('bN1').addEventListener('click',()=>animateTo(1, Math.PI));
+  document.getElementById('bNI').addEventListener('click',()=>animateTo(1, -Math.PI/2));
+  document.getElementById('bSq').addEventListener('click',()=>animateTo(Z.r, Z.th));
+  document.getElementById('bReset').addEventListener('click',()=>{ Z.r=1; Z.th=Math.PI/6; sMag.value=1; sAng.value=30; draw(); });
+  window.addEventListener('resize',draw); window.addEventListener('themechg',draw); window.addEventListener('load',draw); draw();
+})();
+</script>
+<script>
+/* =======================================================================
+   연습문제 풀이 강의 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : PRACTICE 배열에 { t:'제목', yt:'유튜브ID', sub:'부제(선택)' } 한 줄 추가
+   • 순서 변경   : 배열 줄 순서를 바꾸면 화면 순서도 바뀜니다
+   • 교체·업데이트: yt 값을 새 영상 ID로 바꾸고, 원하면 upd:true 추가 → '업데이트' 배지
+   • 준비중      : yt 를 '' 로 두면 '준비중'으로 표시되고, ID를 넣는 순간 재생됩니다
+   유튜브 ID = 주소 youtube.com/watch?v=XXXXXXXXXXX 의 XXXXXXXXXXX 부분
+   ======================================================================= */
+const THEORY_YT = '';
+const LESSON_TITLE = '허수 j는 회전이다';
+const PRACTICE = [
+  // 예) { t:'문제 제목', yt:'유튜브ID', sub:'부제(선택)' },
+];
+(function(){
+  const plist=document.getElementById('plist'), player=document.getElementById('player'),
+        theoryVid=document.getElementById('theoryVid'), plCnt=document.getElementById('plCnt');
+  if(!plist) return;
+  function embed(el, yt, title){
+    if(yt){ el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; }
+    else { el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>'; }
+  }
+  embed(theoryVid, THEORY_YT, '이론 강의 · '+LESSON_TITLE);
+  let cur=0;
+  function renderPlayer(){ if(!PRACTICE.length){ embed(player, '', '연습문제 영상 — 목록에 추가하세요'); return; } const it=PRACTICE[cur]||{}; embed(player, it.yt, (cur+1)+'. '+(it.t||'')); }
+  function badge(it){ return it.yt ? '<span class="badge rdy">▶ 영상</span>' : '<span class="badge soon">준비중</span>'; }
+  function render(){
+    plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ plist.innerHTML='<div class="pcard" style="cursor:default"><div class="pt" style="font-weight:500;color:var(--muted)">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; }
+    plist.innerHTML=PRACTICE.map((it,i)=>'<div class="pcard'+(i===cur?' on':'')+'" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div class="pt">'+it.t+(it.sub?'<small>'+it.sub+'</small>':'')+'</div>'+(it.upd?'<span class="badge upd">업데이트</span>':'')+badge(it)+'</div>').join('');
+    plist.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click',()=>{ cur=+c.dataset.i; renderPlayer(); render(); }));
+  }
+  renderPlayer(); render();
+})();
+</script>
+</body></html>

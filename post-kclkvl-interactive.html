@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="KCL·KVL로 회로 분석 — 전원·저항을 바꾸면 노드 전압과 전류가 실시간으로 풀리는 인터랙티브 회로 실험실">
+<title>KCL·KVL 회로 분석 (인터랙티브) · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  canvas{display:block;width:100%}
+  #ckt{aspect-ratio:1.62/1;border-radius:12px;background:color-mix(in srgb,var(--teach) 5%,transparent)}
+  .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 22px;margin-top:18px}
+  @media(max-width:640px){.controls{grid-template-columns:1fr 1fr}}
+  @media(max-width:420px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:5px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--teach);cursor:pointer}
+  .row{grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .labbtn{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:100px;padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer}
+  .labbtn:hover{border-color:var(--teach)}
+  .readout{margin-top:16px;padding:15px 17px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.8;font-variant-numeric:tabular-nums}
+  .readout .grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px}
+  @media(max-width:560px){.readout .grid{grid-template-columns:1fr}}
+  .tv{font-weight:700}
+  .cur{color:#7c3aed} .vn{color:var(--teach)} .neg{color:var(--write)}
+  .eq{font-size:13px;color:var(--muted);margin-top:8px}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+  /* --- 영상 + 연습문제 플레이리스트 --- */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}
+  .vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}
+  .plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;transition:.15s}
+  .pcard:hover{border-color:var(--teach)}
+  .pcard.on{border-color:var(--teach);background:color-mix(in srgb,var(--teach) 8%,transparent)}
+  .pcard .no{flex:none;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pcard.on .no{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+  .pcard .pt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  .pcard .badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+  .badge.rdy{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.soon{color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+  .badge.upd{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}
+  .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
+  .lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k teach">가르치다</span>
+    <h1>KCL·KVL로 회로 분석하기</h1>
+    <time>인터랙티브 · 노드 해석 실험실 · 2026.07.13</time>
+
+    <h2>강의 요약</h2>
+    <p>회로 분석의 두 기둥은 <strong>KCL(전류 법칙, 접합점 규칙)</strong>과 <strong>KVL(전압 법칙, 폐루프 규칙)</strong>입니다.</p>
+    <p><strong>KCL</strong>: 전하는 만들어지거나 사라지지 않으므로, <em>한 노드로 들어오는 전류의 합 = 나가는 전류의 합</em>. 이 회로의 노드 A에서는 <code>i₁ = i₂ + i₃</code>.</p>
+    <p><strong>KVL</strong>: 에너지가 보존되므로, <em>임의의 폐루프를 한 바퀴 돌며 만나는 전압의 합 = 0</em>. 저항에 전류가 흐르는 방향으로 <strong>전압이 강하</strong>합니다(V = I·R). 이 회로:<br>
+    · 좌측 루프: <code>+17 − i₁·1 − i₃·4 − i₁·2 = 0 → 3i₁ + 4i₃ = 17</code><br>
+    · 우측 루프: <code>−3i₂ − 5 + 4i₃ = 0</code></p>
+    <p>먼저 <strong>기준 노드(0 V, 접지)</strong>를 정하고 다른 노드 전압을 변수(V<sub>A</sub>, V<sub>B</sub>)로 둡니다. 그러면 미지수 3개(i₁·i₂·i₃)와 식 3개가 나와 풀 수 있습니다. 강의의 답: <strong>i₁=3 A, i₂=1 A, i₃=2 A</strong>, 따라서 <strong>V<sub>A</sub>=14 V, V<sub>B</sub>=6 V</strong>.</p>
+    <p>아래는 이 회로를 <strong>실시간으로 푸는 실험실</strong>입니다. 두 전원과 네 저항을 슬라이더로 바꾸면 노드 전압과 전류가 즉시 다시 계산되고, 전류가 각 가지를 흐르는 게 보입니다. (전류가 음수면 화살표 반대 방향으로 흐릅니다.)</p>
+
+    <div class="lab">
+      <div class="gwrap"><canvas id="ckt"></canvas></div>
+      <div class="controls">
+        <div class="ctrl"><label>좌 전원 V₁ <b><span id="vV1">17</span> V</b></label><input id="sV1" type="range" min="0" max="30" step="0.5" value="17"></div>
+        <div class="ctrl"><label>우 전원 V₂ <b><span id="vV2">5</span> V</b></label><input id="sV2" type="range" min="0" max="15" step="0.5" value="5"></div>
+        <div class="ctrl"><label>R₁ (좌상) <b><span id="vR1">1</span> Ω</b></label><input id="sR1" type="range" min="0.5" max="8" step="0.5" value="1"></div>
+        <div class="ctrl"><label>R₂ (우상) <b><span id="vR2">3</span> Ω</b></label><input id="sR2" type="range" min="0.5" max="8" step="0.5" value="3"></div>
+        <div class="ctrl"><label>R₃ (중앙) <b><span id="vR3">4</span> Ω</b></label><input id="sR3" type="range" min="0.5" max="8" step="0.5" value="4"></div>
+        <div class="ctrl"><label>R₄ (하단) <b><span id="vR4">2</span> Ω</b></label><input id="sR4" type="range" min="0.5" max="8" step="0.5" value="2"></div>
+        <div class="row"><button id="reset" class="labbtn">↺ 강의값으로 (17·5·1·3·4·2)</button></div>
+      </div>
+      <div class="readout" id="readout"></div>
+      <div class="note">※ 노드 해석(KCL+KVL)을 실시간으로 연립해 풉니다. 점(●)은 전류 흐름이며 방향·속도가 전류의 부호·크기를 나타냅니다.</div>
+    </div>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>위 개념을 영상으로 설명합니다 (SimuLab 유튜브). 아래 인터랙티브와 함께 보세요.</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 <strong>자유롭게 추가·순서 변경·교체·업데이트</strong>할 수 있고, 새 영상은 언제든 늘어납니다. 문제를 누르면 위 플레이어에서 바로 재생됩니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap">
+        <div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="note">※ 목록은 교수님이 자유롭게 편집합니다. 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+
+    <nav class="lnav">
+      <a class="pv" href="/post-vir-interactive.html"><span class="dir">← 이전 강의</span>전압·전류·저항 (옴의 법칙)</a>
+      <a class="nx" href="/post-radian-interactive.html"><span class="dir">다음 강의 →</span>호도각(라디안)과 삼각함수</a>
+    </nav>
+
+    <p style="margin-top:28px"><a href="/teach-circuits.html">← 회로이론 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}redrawAll();});
+
+// ================= 모델 (노드 해석) =================
+const S={ V1:17, V2:5, R1:1, R2:3, R3:4, R4:2, ph:0 };
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function solve(){
+  const g1=1/S.R1,g2=1/S.R2,g3=1/S.R3,g4=1/S.R4;
+  const A=g1+g2+g3, B=g2+g3, C=g2+g3+g4;
+  const P=g1*S.V1+g2*S.V2, Q=g2*S.V2;
+  const D=B*B-A*C;
+  const Va=(-P*C+B*Q)/D, Vb=(A*Q-B*P)/D;
+  const i1=(S.V1-Va)/S.R1, i2=(Va-Vb-S.V2)/S.R2, i3=(Va-Vb)/S.R3, i4=Vb/S.R4;
+  return {Va,Vb,i1,i2,i3,i4};
+}
+function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
+
+// ================= 회로도 =================
+function drawCkt(){
+  const c=document.getElementById('ckt'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const text=css('--text'), muted=css('--muted'), line=css('--line'), teach=css('--teach'), red='#d64b3c', purp='#7c3aed';
+  const W=x=>x*w/460, H=y=>y*h/284;
+  const sol=solve();
+  const wire=(x1,y1,x2,y2)=>{ ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(x1),H(y1)); ctx.lineTo(W(x2),H(y2)); ctx.stroke(); };
+  const node=(x,y)=>{ ctx.fillStyle=text; ctx.beginPath(); ctx.arc(W(x),H(y),3,0,7); ctx.fill(); };
+  function resH(xc,y,label){ const L=48,x0=xc-L/2; ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(x0),H(y));
+    let xx=x0; const seg=L/6; for(let i=0;i<6;i++){ xx+=seg; ctx.lineTo(W(xx-seg/2),H(y)+(i%2?6:-6)); ctx.lineTo(W(xx),H(y)); } ctx.stroke();
+    ctx.fillStyle=muted; ctx.font='12px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillText(label, W(xc), H(y)-13); }
+  function resV(x,yc,label){ const L=48,y0=yc-L/2; ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(x),H(y0));
+    let yy=y0; const seg=L/6; for(let i=0;i<6;i++){ yy+=seg; ctx.lineTo(W(x)+(i%2?6:-6),H(yy-seg/2)); ctx.lineTo(W(x),H(yy)); } ctx.stroke();
+    ctx.fillStyle=muted; ctx.font='12px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(label, W(x)+12, H(yc)); }
+  function battV(x,yc,label){ // + top, − bottom
+    ctx.strokeStyle=text; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(W(x)-13,H(yc-6)); ctx.lineTo(W(x)+13,H(yc-6)); ctx.stroke();       // long +
+    ctx.beginPath(); ctx.moveTo(W(x)-7,H(yc+6)); ctx.lineTo(W(x)+7,H(yc+6)); ctx.stroke();          // short −
+    ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText('+',W(x)+16,H(yc-6)); ctx.fillText('–',W(x)+16,H(yc+6));
+    ctx.fillStyle=red; ctx.font='bold 13px Pretendard'; ctx.fillText(label, W(x)-46, H(yc)); }
+  function dots(x1,y1,x2,y2,cur){ const n=Math.max(3,Math.min(9,Math.round(3+Math.abs(cur)*1.4))); const dir=cur>=0?1:-1;
+    for(let k=0;k<n;k++){ let f=(S.ph*dir + k/n); f=((f%1)+1)%1; const x=x1+(x2-x1)*f, y=y1+(y2-y1)*f;
+      ctx.fillStyle=purp; ctx.beginPath(); ctx.arc(W(x),H(y),3,0,7); ctx.fill(); } }
+  function arrow(x,y,dx,label,cur){ const dir=cur>=0?1:-1; ctx.fillStyle=purp;
+    if(dx){ ctx.beginPath(); ctx.moveTo(W(x)+dir*8,H(y)); ctx.lineTo(W(x)-dir*4,H(y)-5); ctx.lineTo(W(x)-dir*4,H(y)+5); ctx.closePath(); ctx.fill(); }
+    else { ctx.beginPath(); ctx.moveTo(W(x),H(y)+dir*8); ctx.lineTo(W(x)-5,H(y)-dir*4); ctx.lineTo(W(x)+5,H(y)-dir*4); ctx.closePath(); ctx.fill(); }
+    ctx.fillStyle=purp; ctx.font='bold 12.5px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillText(label, W(x), H(y)+(dx?18:0)+(dx?0:0)); }
+
+  // 노드 좌표
+  const BL=[50,215],TL=[50,55],Va=[235,55],TR=[420,55],BR=[420,215],Vb=[235,215];
+  // 배선
+  wire(TL[0],TL[1],110,55); wire(160,55,Va[0],Va[1]); // top-left (resistor gap)
+  wire(Va[0],Va[1],345,55); wire(395,55,TR[0],TR[1]); // top-right
+  wire(TL[0],TL[1],TL[0],105); wire(TL[0],155,BL[0],BL[1]);      // left source area
+  wire(TR[0],TR[1],TR[0],105); wire(TR[0],155,BR[0],BR[1]);      // right source area
+  wire(Va[0],Va[1],Va[0],105); wire(Va[0],155,Vb[0],Vb[1]);      // middle
+  wire(BL[0],BL[1],110,215); wire(160,215,Vb[0],Vb[1]); wire(Vb[0],Vb[1],BR[0],BR[1]); // bottom
+  // 저항
+  resH(135,55,'R₁='+S.R1+'Ω'); resH(370,55,'R₂='+S.R2+'Ω'); resV(Va[0],130,'R₃='+S.R3+'Ω'); resH(135,215,'R₄='+S.R4+'Ω');
+  // 전원
+  battV(TL[0],130,'V₁='+S.V1+'V'); battV(TR[0],130,'V₂='+S.V2+'V');
+  // 노드/점
+  [Va,Vb].forEach(p=>node(p[0],p[1]));
+  // 노드 전압 라벨
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle=red; ctx.font='bold 12.5px Pretendard'; ctx.fillText(S.V1+'V', W(TL[0]), H(40));
+  ctx.fillStyle=muted; ctx.fillText('0V', W(BL[0]), H(238));
+  ctx.fillStyle=teach; ctx.font='bold 13px Pretendard';
+  ctx.fillText('Vₐ = '+sol.Va.toFixed(1)+'V', W(Va[0]), H(40));
+  ctx.fillText('V_b = '+sol.Vb.toFixed(1)+'V', W(Vb[0]), H(238));
+  ctx.fillStyle=red; ctx.font='bold 12px Pretendard'; ctx.fillText('V_b+'+S.V2, W(TR[0]), H(40));
+
+  // 전류 점 + 화살표
+  dots(115,55,155,55, sol.i1); arrow(178,55,true,'i₁', sol.i1);
+  dots(350,55,390,55, sol.i2); arrow(300,55,true,'i₂', sol.i2);
+  dots(Va[0],110,Vb[0],155, sol.i3); arrow(Va[0],130,false,'i₃', sol.i3);
+  dots(155,215,115,215, sol.i4);   // 하단 2Ω (Vb→접지)
+  ctx.fillStyle=muted; ctx.font='10.5px Pretendard'; ctx.textAlign='center'; ctx.fillText('loop 1', W(140),H(140)); ctx.fillText('loop 2', W(330),H(140));
+}
+
+function fmt(x){ return (x>=0?'+':'−')+Math.abs(x).toFixed(2); }
+function updateReadout(){ const s=solve();
+  const kcl = Math.abs(s.i1-(s.i2+s.i3))<0.01;
+  document.getElementById('readout').innerHTML =
+    '<div class="grid">'+
+      '<div>V<sub>A</sub> = <span class="tv vn">'+s.Va.toFixed(2)+' V</span></div>'+
+      '<div>V<sub>B</sub> = <span class="tv vn">'+s.Vb.toFixed(2)+' V</span></div>'+
+      '<div>i₁ = <span class="tv cur">'+fmt(s.i1)+' A</span></div>'+
+      '<div>i₂ = <span class="tv cur">'+fmt(s.i2)+' A</span></div>'+
+      '<div>i₃ = <span class="tv cur">'+fmt(s.i3)+' A</span></div>'+
+      '<div>i(R₄) = <span class="tv cur">'+fmt(s.i4)+' A</span></div>'+
+    '</div>'+
+    '<div class="eq">전압강하 — R₁: '+(s.i1*S.R1).toFixed(2)+'V · R₂: '+Math.abs(s.i2*S.R2).toFixed(2)+'V · R₃: '+(s.i3*S.R3).toFixed(2)+'V · R₄: '+(s.i4*S.R4).toFixed(2)+'V</div>'+
+    '<div class="eq">KCL(A): i₁ = i₂ + i₃ → '+s.i1.toFixed(2)+' = '+s.i2.toFixed(2)+' + '+s.i3.toFixed(2)+' '+(kcl?'✓':'')+'  ·  (음수 전류 = 화살표 반대 방향)</div>';
+}
+function redrawAll(){ drawCkt(); updateReadout(); }
+
+// 컨트롤
+function bind(id,key,lab,fx){ document.getElementById(id).addEventListener('input',e=>{ S[key]=+e.target.value; document.getElementById(lab).textContent=fx?fx(S[key]):S[key]; redrawAll(); }); }
+bind('sV1','V1','vV1'); bind('sV2','V2','vV2'); bind('sR1','R1','vR1'); bind('sR2','R2','vR2'); bind('sR3','R3','vR3'); bind('sR4','R4','vR4');
+document.getElementById('reset').addEventListener('click',()=>{ Object.assign(S,{V1:17,V2:5,R1:1,R2:3,R3:4,R4:2});
+  const set=(id,val)=>{document.getElementById(id).value=val;};
+  set('sV1',17);set('sV2',5);set('sR1',1);set('sR2',3);set('sR3',4);set('sR4',2);
+  vV1.textContent=17;vV2.textContent=5;vR1.textContent=1;vR2.textContent=3;vR3.textContent=4;vR4.textContent=2; redrawAll(); });
+
+let last=performance.now();
+function tick(now){ const dt=(now-last)/1000; last=now; const s=solve();
+  const spd=Math.min(0.5,(Math.abs(s.i1)+Math.abs(s.i2)+Math.abs(s.i3))/18)+0.05; S.ph=(S.ph+dt*spd)%1; drawCkt(); requestAnimationFrame(tick); }
+requestAnimationFrame(tick);
+window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll); redrawAll();
+</script>
+
+<script>
+/* =======================================================================
+   연습문제 풀이 강의 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : PRACTICE 배열에 { t:'제목', yt:'유튜브ID', sub:'부제(선택)' } 한 줄 추가
+   • 순서 변경   : 배열 줄 순서를 바꾸면 화면 순서도 바뀜니다
+   • 교체·업데이트: yt 값을 새 영상 ID로 바꾸고, 원하면 upd:true 추가 → '업데이트' 배지
+   • 준비중      : yt 를 '' 로 두면 '준비중'으로 표시되고, ID를 넣는 순간 재생됩니다
+   유튜브 ID = 주소 youtube.com/watch?v=XXXXXXXXXXX 의 XXXXXXXXXXX 부분
+   ======================================================================= */
+const THEORY_YT = '';
+const LESSON_TITLE = 'KCL·KVL로 회로 분석하기';
+const PRACTICE = [
+  // 예) { t:'문제 제목', yt:'유튜브ID', sub:'부제(선택)' },
+];
+(function(){
+  const plist=document.getElementById('plist'), player=document.getElementById('player'),
+        theoryVid=document.getElementById('theoryVid'), plCnt=document.getElementById('plCnt');
+  if(!plist) return;
+  function embed(el, yt, title){
+    if(yt){ el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; }
+    else { el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>'; }
+  }
+  embed(theoryVid, THEORY_YT, '이론 강의 · '+LESSON_TITLE);
+  let cur=0;
+  function renderPlayer(){ if(!PRACTICE.length){ embed(player, '', '연습문제 영상 — 목록에 추가하세요'); return; } const it=PRACTICE[cur]||{}; embed(player, it.yt, (cur+1)+'. '+(it.t||'')); }
+  function badge(it){ return it.yt ? '<span class="badge rdy">▶ 영상</span>' : '<span class="badge soon">준비중</span>'; }
+  function render(){
+    plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ plist.innerHTML='<div class="pcard" style="cursor:default"><div class="pt" style="font-weight:500;color:var(--muted)">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; }
+    plist.innerHTML=PRACTICE.map((it,i)=>'<div class="pcard'+(i===cur?' on':'')+'" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div class="pt">'+it.t+(it.sub?'<small>'+it.sub+'</small>':'')+'</div>'+(it.upd?'<span class="badge upd">업데이트</span>':'')+badge(it)+'</div>').join('');
+    plist.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click',()=>{ cur=+c.dataset.i; renderPlayer(); render(); }));
+  }
+  renderPlayer(); render();
+})();
+</script>
+</body></html>

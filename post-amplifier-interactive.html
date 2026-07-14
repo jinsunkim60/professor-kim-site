@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="공통이미터 소신호 증폭기 — 회로도와 파형을 직접 조작하며 전압 증폭·반전·클리핑을 보는 인터랙티브">
+<title>소신호 증폭기는 어떻게 작동하나 (인터랙티브) · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  .lab-top{display:grid;grid-template-columns:360px 1fr;gap:20px}
+  @media(max-width:760px){.lab-top{grid-template-columns:1fr}}
+  canvas{display:block;width:100%}
+  #ckt{aspect-ratio:1/1.02;border-radius:12px;background:color-mix(in srgb,var(--teach) 6%,transparent)}
+  .graphs{display:flex;flex-direction:column;gap:12px;justify-content:center}
+  .gwrap{position:relative}
+  .glabel{position:absolute;top:5px;left:10px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+  #gin{height:130px} #gout{height:210px}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-top:18px;align-items:end}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--teach);cursor:pointer}
+  .row{display:flex;gap:16px;align-items:center;grid-column:1/-1;flex-wrap:wrap}
+  .labbtn{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:100px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+  .labbtn:hover{border-color:var(--teach)} .labbtn.on{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .chk{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);cursor:pointer}
+  .chk input{accent-color:var(--teach);width:16px;height:16px}
+  .readout{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.7;font-variant-numeric:tabular-nums}
+  .readout .tv{font-weight:700}
+  .clip{color:var(--write);font-weight:700}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .role{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 4px;margin:6px 0}
+  .role div{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:9px 14px;border-top:1px solid var(--line-soft);font-size:14.5px}
+  .role div:first-child{border-top:none}
+  .role b{color:var(--teach)}
+
+  /* --- 영상 + 연습문제 플레이리스트 --- */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}
+  .vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}
+  .plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;transition:.15s}
+  .pcard:hover{border-color:var(--teach)}
+  .pcard.on{border-color:var(--teach);background:color-mix(in srgb,var(--teach) 8%,transparent)}
+  .pcard .no{flex:none;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pcard.on .no{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+  .pcard .pt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  .pcard .badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+  .badge.rdy{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.soon{color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+  .badge.upd{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}
+  .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
+  .lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k teach">가르치다</span>
+    <h1>소신호 증폭기는 어떻게 작동하나</h1>
+    <time>인터랙티브 · 공통이미터(Class A) 증폭기 · 2026.07.13</time>
+
+    <h2>강의 요약</h2>
+    <p>마이크는 아주 작은 신호(예: 20 mV<sub>pp</sub>)를 냅니다. 이걸 스피커를 울릴 만큼 키우려면 <strong>전압도 전력도</strong> 키워야 합니다. 변압기로 전압만 올리면 전력은 그대로(<code>P = V·I</code>)라 소용이 없죠 — 그래서 <strong>트랜지스터</strong>가 필요합니다.</p>
+    <p><strong>공통이미터 증폭기</strong>의 원리는 이렇습니다. 베이스 전압이 오르면 컬렉터 전류가 커지고, 그 전류가 <strong>컬렉터 저항 Rc</strong>를 지나며 전압을 만듭니다: <code>V_C = Vcc − I_C·Rc</code>. 전류가 커질수록 컬렉터 전압은 <em>내려갑니다</em> — 그래서 입력이 오르면 출력이 내려가는 <strong>180° 반전</strong>이 생깁니다.</p>
+    <p>제대로 증폭하려면 트랜지스터를 <strong>선형 영역(베이스가 이미터보다 ≈ 0.7 V 위)</strong>에서 동작시키고, 무신호 때 컬렉터 전압을 <strong>Vcc/2</strong>에 두어야 위·아래로 대칭 스윙합니다. 출력이 Vcc를 넘거나 0 아래로 가려 하면 파형 끝이 잘리는 <strong class="clip">클리핑(왜곡)</strong>이 생깁니다.</p>
+    <p>단순 회로는 이득이 <strong>hfe(트랜지스터 개체·온도차)</strong>에 크게 의존해 불안정합니다. 그래서 <strong>이미터 저항 Re</strong>로 부귀환을 주면 이득이 <code>Av ≈ Rc / Re</code>로 정해져 트랜지스터와 무관하게 <strong>안정</strong>해집니다. 여기에 <strong>전압분배 바이어스(R1·R2)</strong>로 베이스 전압까지 안정시키면 완성입니다. 더 큰 AC 이득이 필요하면 <strong>이미터 바이패스 커패시터</strong>로 Re를 교류적으로 없애면 되지만, 이득이 커지는 만큼 왜곡도 늘고 대역폭은 줄어듭니다.</p>
+
+    <p>아래에서 <strong>입력 진폭</strong>, <strong>Rc</strong>, <strong>Re</strong>를 움직여 보세요. 회로의 컬렉터 전압 V_C가 실시간으로 바뀌고, 오른쪽 파형에서 <strong>증폭·반전·클리핑</strong>이 그대로 보입니다.</p>
+
+    <div class="lab">
+      <div class="lab-top">
+        <div class="stage"><canvas id="ckt"></canvas></div>
+        <div class="graphs">
+          <div class="gwrap"><div class="glabel">입력 v_in(t) [mV]</div><canvas id="gin"></canvas></div>
+          <div class="gwrap"><div class="glabel">출력 v_out = V_C(t) [V] — 반전·증폭 (점선=Vcc, 0 : 클리핑 한계)</div><canvas id="gout"></canvas></div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="ctrl"><label>입력 진폭 <b><span id="vAmp">40</span> mV<sub>pp</sub></b></label><input id="sAmp" type="range" min="5" max="140" step="1" value="40"></div>
+        <div class="ctrl"><label>컬렉터 저항 Rc <b><span id="vRc">1.0</span> kΩ</b></label><input id="sRc" type="range" min="0.5" max="3" step="0.1" value="1"></div>
+        <div class="ctrl"><label>이미터 저항 Re <b><span id="vRe">0.50</span> kΩ</b></label><input id="sRe" type="range" min="0.1" max="1.2" step="0.05" value="0.5"></div>
+        <div class="ctrl"><label>공급 전압 Vcc <b><span id="vVcc">10</span> V</b></label><input id="sVcc" type="range" min="6" max="15" step="1" value="10"></div>
+        <div class="row">
+          <button id="play" class="labbtn on">❚❚ 정지</button>
+          <label class="chk"><input type="checkbox" id="byp"> 이미터 바이패스 커패시터 (AC 이득 최대)</label>
+        </div>
+      </div>
+      <div class="readout" id="readout"></div>
+      <div class="note">※ 소신호 근사(무신호 시 V_C를 Vcc/2로 바이어스했다고 가정). 이득 Av = −Rc/Re(반전), 바이패스 시 Av ≈ (Vcc/2)/V_T. 교육용 단순 모델입니다.</div>
+    </div>
+
+    <h2>각 부품의 역할</h2>
+    <div class="role">
+      <div><b>Rc (컬렉터저항)</b><span>전류 변화를 전압 변화로 바꿈 → 전압 증폭기로 만듦</span></div>
+      <div><b>R1·R2 (분배)</b><span>베이스를 ≈0.7 V 위로 안정하게 바이어스</span></div>
+      <div><b>C1 (입력결합)</b><span>DC 바이어스는 마이크로 못 가게 막고, AC 신호만 통과</span></div>
+      <div><b>Re (이미터저항)</b><span>부귀환 → 이득을 Rc/Re로 고정, 트랜지스터 개체차·온도에 무관하게 안정</span></div>
+      <div><b>C_E (바이패스)</b><span>교류적으로 Re를 없애 AC 이득↑ (단 왜곡↑·대역↓)</span></div>
+      <div><b>C2 (출력결합)</b><span>DC는 막고 AC만 다음 단으로 전달</span></div>
+    </div>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>이 개념을 영상으로 설명합니다 (SimuLab 유튜브).</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 <strong>자유롭게 추가·순서 변경·교체·업데이트</strong>할 수 있습니다. 문제를 누르면 위 플레이어에서 바로 재생됩니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap">
+        <div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+
+    <p style="margin-top:36px"><a href="/teach-electronics.html">← 전자회로 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}redrawAll();});
+
+// ================= 모델 =================
+const S = { Vcc:10, Rc:1, Re:0.5, amp:40, byp:false, t:0 };   // Rc,Re: kΩ, amp: mV pp
+const VT=0.026, VSAT=0.2;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const VcQ=()=>S.Vcc/2;
+const gain=()=> S.byp ? (S.Vcc/2)/VT : (S.Rc/S.Re);          // |Av|
+const vin=t=> (S.amp/1000/2)*Math.sin(2*Math.PI*t);          // V (진폭 = pp/2)
+const voutRaw=t=> VcQ() - gain()*vin(t);                     // 반전
+const vout=t=> clamp(voutRaw(t), VSAT, S.Vcc);
+function isClipping(){ let c=false; for(let t=0;t<=1;t+=0.02){ const r=voutRaw(t); if(r>S.Vcc||r<VSAT) c=true; } return c; }
+
+function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
+
+// ================= 회로도 =================
+function drawCkt(){
+  const c=document.getElementById('ckt'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const text=css('--text'), muted=css('--muted'), teach=css('--teach'), blue=css('--design'), rose=css('--write');
+  const W=x=>x*w/360, H=y=>y*h/368;
+  const wire=(x1,y1,x2,y2,col)=>{ ctx.strokeStyle=col||text; ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(W(x1),H(y1)); ctx.lineTo(W(x2),H(y2)); ctx.stroke(); };
+  const dot=(x,y,col)=>{ ctx.fillStyle=col||text; ctx.beginPath(); ctx.arc(W(x),H(y),2.6,0,7); ctx.fill(); };
+  function resV(x,y,len,label,val){ const x0=W(x); let yy=H(y); const seg=H(len)/6; ctx.strokeStyle=text; ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(x0,yy);
+    for(let i=0;i<6;i++){ yy+=seg; ctx.lineTo(x0+(i%2?-5:5),yy-seg/2); ctx.lineTo(x0,yy);} ctx.stroke();
+    ctx.fillStyle=muted; ctx.font='11.5px Pretendard'; ctx.textAlign='left'; ctx.fillText(label, x0+9, H(y)+H(len)/2-6); ctx.fillStyle=text; ctx.fillText(val, x0+9, H(y)+H(len)/2+9); }
+  function capH(x,y,label){ const g=4; ctx.strokeStyle=text; ctx.lineWidth=1.8; ctx.beginPath();
+    ctx.moveTo(W(x)-g,H(y)-8); ctx.lineTo(W(x)-g,H(y)+8); ctx.moveTo(W(x)+g,H(y)-8); ctx.lineTo(W(x)+g,H(y)+8); ctx.stroke();
+    ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.fillText(label,W(x),H(y)-16); }
+
+  ctx.textBaseline='middle';
+  // 노드 좌표
+  const bx=120, baseY=178, tx=205, tcy=baseY, cx=tx+8, ccY=tcy-26, eY=tcy+26, colNodeY=100, px=tx-12;
+
+  // 레일
+  wire(30,40,330,40); wire(30,340,330,340);
+  ctx.fillStyle=teach; ctx.textAlign='left'; ctx.font='12px Pretendard'; ctx.fillText('+Vcc = '+S.Vcc+' V', W(30), H(28));
+  ctx.strokeStyle=muted; ctx.lineWidth=1.6; for(let i=0;i<3;i++){ ctx.beginPath(); ctx.moveTo(W(180)-10+i*4, H(344)+i*4); ctx.lineTo(W(180)+10-i*4, H(344)+i*4); ctx.stroke(); }
+
+  // 분배 바이어스
+  wire(bx,40,bx,66); resV(bx,66,58,'R1','13k'); wire(bx,124,bx,baseY);
+  wire(bx,baseY,bx,200); resV(bx,200,64,'R2','7k'); wire(bx,264,bx,340);
+  dot(bx,baseY);
+  // 입력
+  wire(35,baseY,72,baseY,teach); capH(80,baseY,'C1'); wire(88,baseY,bx,baseY);
+  ctx.fillStyle=teach; ctx.textAlign='left'; ctx.font='12px Pretendard'; ctx.fillText('v_in →', W(18), H(baseY-15));
+
+  // Rc & 컬렉터
+  wire(cx,ccY,cx,colNodeY); resV(cx,44,56,'Rc',S.Rc.toFixed(1)+'k'); wire(cx,40,cx,44);
+  dot(cx,colNodeY);
+  wire(cx,colNodeY,285,colNodeY); capH(292,colNodeY,'C2'); wire(300,colNodeY,322,colNodeY);
+  ctx.fillStyle=muted; ctx.textAlign='left'; ctx.font='11px Pretendard'; ctx.fillText('v_out', W(300), H(colNodeY-14));
+
+  // Re & 이미터
+  wire(cx,eY,cx,264); resV(cx,264,54,'Re',S.Re.toFixed(2)+'k'); wire(cx,318,cx,340);
+  if(S.byp){ wire(cx,286,cx+34,286,teach); ctx.strokeStyle=teach; ctx.lineWidth=1.8; ctx.beginPath();
+    ctx.moveTo(W(cx+34),H(282)); ctx.lineTo(W(cx+34),H(290)); ctx.moveTo(W(cx+40),H(282)); ctx.lineTo(W(cx+40),H(290)); ctx.stroke();
+    wire(cx+40,286,cx+40,340,teach); ctx.fillStyle=teach; ctx.textAlign='left'; ctx.font='11px Pretendard'; ctx.fillText('C_E',W(cx+46),H(286)); }
+
+  // 트랜지스터 (원형 NPN)
+  wire(bx,baseY,px,baseY);
+  ctx.strokeStyle=text; ctx.lineWidth=1.4; ctx.beginPath(); ctx.arc(W(tx+2),H(tcy),W(19),0,7); ctx.stroke();
+  ctx.lineWidth=2.6; ctx.beginPath(); ctx.moveTo(W(px),H(tcy-11)); ctx.lineTo(W(px),H(tcy+11)); ctx.stroke();
+  ctx.lineWidth=1.8; wire(px,tcy-5,cx,ccY); wire(px,tcy+5,cx,eY);
+  { const ax=W(cx),ay=H(eY); const a=Math.atan2(H(eY)-H(tcy+5),W(cx)-W(px)); ctx.fillStyle=text; ctx.beginPath(); ctx.moveTo(ax,ay);
+    ctx.lineTo(ax-9*Math.cos(a-0.45),ay-9*Math.sin(a-0.45)); ctx.lineTo(ax-9*Math.cos(a+0.45),ay-9*Math.sin(a+0.45)); ctx.closePath(); ctx.fill(); }
+  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='left';
+  ctx.fillText('B',W(px-13),H(tcy-8)); ctx.fillText('C',W(cx+5),H(ccY+9)); ctx.fillText('E',W(cx+5),H(eY-3));
+
+  // 라이브 전압
+  const vc=vout(S.t), clipNow=(voutRaw(S.t)>S.Vcc||voutRaw(S.t)<VSAT);
+  ctx.font='bold 12.5px Pretendard'; ctx.textAlign='left';
+  ctx.fillStyle=(clipNow?rose:teach); ctx.fillText('V_C = '+vc.toFixed(2)+' V', W(cx+12), H(colNodeY+16));
+  ctx.fillStyle=muted; ctx.font='11.5px Pretendard';
+  ctx.fillText('V_B ≈ 2.0 V', W(bx-8), H(baseY+26)); ctx.fillText('V_E ≈ 1.3 V', W(cx+12), H(eY+22));
+
+  // 전류 점(애니메이션)
+  const icRel=clamp((S.Vcc-vc)/S.Vcc,0,1);
+  ctx.fillStyle=blue; for(let k=0;k<4;k++){ const p=((S.t*1.3+k/4)%1); const yy=44+p*(colNodeY-44); ctx.beginPath(); ctx.arc(W(cx),H(yy),2.2+2*icRel,0,7); ctx.fill(); }
+}
+
+// ================= 파형 =================
+function graph(id,fn,ymin,ymax,col,extras){
+  const c=document.getElementById(id); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const pad={l:44,r:12,t:20,b:18}; const T=2;
+  const gx=x=>pad.l+(x/T)*(w-pad.l-pad.r), gy=y=>pad.t+(1-(y-ymin)/(ymax-ymin))*(h-pad.t-pad.b);
+  const line=css('--line'), muted=css('--muted');
+  ctx.strokeStyle=line; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,h-pad.b); ctx.lineTo(w-pad.r,h-pad.b); ctx.stroke();
+  if(extras) extras(ctx,gx,gy,pad,w,h);
+  ctx.strokeStyle=col; ctx.lineWidth=2.3; ctx.beginPath();
+  for(let t=0;t<=T;t+=0.01){ const x=gx(t),y=gy(fn(t)); t===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke();
+  ctx.strokeStyle=muted; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(gx(S.t),pad.t); ctx.lineTo(gx(S.t),h-pad.b); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(gx(S.t),gy(fn(S.t)),4,0,7); ctx.fill();
+  ctx.fillStyle=muted; ctx.font='10px Pretendard'; ctx.textAlign='right';
+  ctx.fillText(ymax.toFixed(ymax<3?1:0),pad.l-5,gy(ymax)+3); ctx.fillText(ymin.toFixed(ymin<0?1:0),pad.l-5,gy(ymin)+3);
+  return {gx,gy,pad};
+}
+function drawIn(){ const a=Math.max(6,S.amp/2*1.25); graph('gin',t=>vin(t)*1000,-a,a,css('--teach'), (ctx,gx,gy,pad,w,h)=>{
+  ctx.strokeStyle=css('--muted'); ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(pad.l,gy(0)); ctx.lineTo(w-pad.r,gy(0)); ctx.stroke(); ctx.setLineDash([]); }); }
+function drawOut(){ graph('gout',t=>vout(t),0,S.Vcc,(isClipping()?css('--write'):css('--design')), (ctx,gx,gy,pad,w,h)=>{
+  ctx.strokeStyle=css('--muted'); ctx.setLineDash([2,4]);
+  ctx.beginPath(); ctx.moveTo(pad.l,gy(S.Vcc)); ctx.lineTo(w-pad.r,gy(S.Vcc)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad.l,gy(0.2)); ctx.lineTo(w-pad.r,gy(0.2)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle=css('--line'); ctx.setLineDash([1,4]); ctx.beginPath(); ctx.moveTo(pad.l,gy(S.Vcc/2)); ctx.lineTo(w-pad.r,gy(S.Vcc/2)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=css('--muted'); ctx.font='10px Pretendard'; ctx.textAlign='left'; ctx.fillText('Vcc',pad.l+2,gy(S.Vcc)+8); ctx.fillText('Q=Vcc/2',pad.l+2,gy(S.Vcc/2)-4);
+}); }
+
+function updateReadout(){ const av=gain(), clip=isClipping();
+  document.getElementById('readout').innerHTML =
+    '이득 Av = '+(S.byp?'≈ (Vcc/2)/V_T':'Rc/Re')+' = <span class="tv" style="color:'+css('--teach')+'">−'+av.toFixed(1)+'</span> (반전)'+
+    ' &nbsp;·&nbsp; V_C(Q) = <span class="tv">'+VcQ().toFixed(1)+' V</span>'+
+    ' &nbsp;·&nbsp; v_in = <span class="tv">'+(vin(S.t)*1000).toFixed(1)+' mV</span>'+
+    ' → v_out = <span class="tv">'+vout(S.t).toFixed(2)+' V</span><br>'+
+    (clip? '<span class="clip">⚠ 클리핑 발생 — 출력이 Vcc/0 한계에 부딪혀 파형이 잘립니다. 이득이나 입력을 줄이세요.</span>'
+         : '<span style="color:'+css('--teach')+'">정상 선형 증폭 — 출력이 한계 안에서 대칭으로 스윙합니다.</span>');
+}
+
+function redrawAll(){ drawCkt(); drawIn(); drawOut(); updateReadout(); }
+
+// 컨트롤
+const on=(id,f)=>document.getElementById(id).addEventListener('input',f);
+on('sAmp',e=>{S.amp=+e.target.value; document.getElementById('vAmp').textContent=S.amp; redrawAll();});
+on('sRc',e=>{S.Rc=+e.target.value; document.getElementById('vRc').textContent=S.Rc.toFixed(1); redrawAll();});
+on('sRe',e=>{S.Re=+e.target.value; document.getElementById('vRe').textContent=S.Re.toFixed(2); redrawAll();});
+on('sVcc',e=>{S.Vcc=+e.target.value; document.getElementById('vVcc').textContent=S.Vcc; redrawAll();});
+document.getElementById('byp').addEventListener('change',e=>{S.byp=e.target.checked; redrawAll();});
+
+let anim=null;
+function toggle(){ const b=document.getElementById('play');
+  if(anim){ cancelAnimationFrame(anim); anim=null; b.classList.remove('on'); b.textContent='▶ 애니메이션'; return; }
+  b.classList.add('on'); b.textContent='❚❚ 정지'; let last=performance.now();
+  const step=now=>{ const dt=(now-last)/1000; last=now; S.t=(S.t+dt*0.6)%2; redrawAll(); anim=requestAnimationFrame(step); };
+  anim=requestAnimationFrame(step);
+}
+document.getElementById('play').addEventListener('click',toggle);
+
+window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll);
+redrawAll(); toggle();
+</script>
+<script>
+/* =======================================================================
+   연습문제 풀이 강의 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : PRACTICE 배열에 { t:'제목', yt:'유튜브ID', sub:'부제(선택)' } 한 줄 추가
+   • 순서 변경   : 배열 줄 순서를 바꾸면 화면 순서도 바뀜니다
+   • 교체·업데이트: yt 값을 새 영상 ID로 바꾸고, 원하면 upd:true 추가 → '업데이트' 배지
+   • 준비중      : yt 를 '' 로 두면 '준비중'으로 표시되고, ID를 넣는 순간 재생됩니다
+   유튜브 ID = 주소 youtube.com/watch?v=XXXXXXXXXXX 의 XXXXXXXXXXX 부분
+   ======================================================================= */
+const THEORY_YT = '';
+const LESSON_TITLE = '소신호 증폭기';
+const PRACTICE = [
+  // 예) { t:'문제 제목', yt:'유튜브ID', sub:'부제(선택)' },
+];
+(function(){
+  const plist=document.getElementById('plist'), player=document.getElementById('player'),
+        theoryVid=document.getElementById('theoryVid'), plCnt=document.getElementById('plCnt');
+  if(!plist) return;
+  function embed(el, yt, title){
+    if(yt){ el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; }
+    else { el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>'; }
+  }
+  embed(theoryVid, THEORY_YT, '이론 강의 · '+LESSON_TITLE);
+  let cur=0;
+  function renderPlayer(){ if(!PRACTICE.length){ embed(player, '', '연습문제 영상 — 목록에 추가하세요'); return; } const it=PRACTICE[cur]||{}; embed(player, it.yt, (cur+1)+'. '+(it.t||'')); }
+  function badge(it){ return it.yt ? '<span class="badge rdy">▶ 영상</span>' : '<span class="badge soon">준비중</span>'; }
+  function render(){
+    plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ plist.innerHTML='<div class="pcard" style="cursor:default"><div class="pt" style="font-weight:500;color:var(--muted)">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; }
+    plist.innerHTML=PRACTICE.map((it,i)=>'<div class="pcard'+(i===cur?' on':'')+'" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div class="pt">'+it.t+(it.sub?'<small>'+it.sub+'</small>':'')+'</div>'+(it.upd?'<span class="badge upd">업데이트</span>':'')+badge(it)+'</div>').join('');
+    plist.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click',()=>{ cur=+c.dataset.i; renderPlayer(); render(); }));
+  }
+  renderPlayer(); render();
+})();
+</script>
+</body></html>

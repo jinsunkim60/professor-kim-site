@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="전기기기·모터 강의 — SRM, 인덕턴스와 토크, MATLAB 시뮬레이션"><title>전기기기·모터 · 가르치다 · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+</head><body>
+<header class="nav"><div class="nav-inner"><a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a><nav class="nav-links"><a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a><a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a><button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button></nav></div></header>
+<main class="wrap">
+  <section class="page-head"><div class="num" style="color:var(--build)"><a href="/teach.html" style="color:var(--muted)">가르치다</a> · 과목</div><h1>전기기기 · 모터</h1><p>교수님 전공 영역. 인덕턴스와 토크의 관계부터 Outer Rotor SRM, MATLAB 시뮬레이션까지.</p></section>
+  <section style="padding-top:20px"><div class="sec-head"><h2>단원 1 · 릴럭턴스 모터(SRM)</h2></div><div class="latest-list">
+    <a class="item" href="/post-srm-interactive.html"><span class="k design">인터랙티브</span><h4>SRM의 토크는 어디서 나오는가 — 토크·각도 데모 (6/4 SRM)</h4><span class="date">핵심</span></a>
+    <a class="item" href="/post-srm-torque-sim.html"><span class="k design">설계하다</span><h4>Outer Rotor SRM — 토크·각도 특성 MATLAB 시뮬레이션</h4><span class="date">2026.05.30</span></a>
+  </div></section>
+  <p class="prose" style="max-width:720px;color:var(--muted);font-size:13.5px">다음 예정: DC 모터 · 유도전동기 · 토크-속도 특성 · 인버터 구동 · MATLAB 실습</p>
+</main>
+<footer><div class="foot"><div class="cr">© 2026 김진선 · 서울 송파</div><div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div></div></footer>
+<script>document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}});</script>
+</body></html>

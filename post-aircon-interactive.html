@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="에어컨은 어떻게 시원해지나 — 냉동 사이클을 압력-온도(P-T) 다이어그램으로 보는 인터랙티브">
+<title>에어컨의 원리 — 압력과 온도 (인터랙티브) · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  .lab-top{display:grid;grid-template-columns:350px 1fr;gap:20px}
+  @media(max-width:760px){.lab-top{grid-template-columns:1fr}}
+  canvas{display:block;width:100%}
+  #cyc{aspect-ratio:1/1;border-radius:12px;background:color-mix(in srgb,var(--design) 5%,transparent)}
+  #gpt{height:360px;border-radius:12px}
+  .gwrap{position:relative}
+  .glabel{position:absolute;top:6px;left:12px;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .controls{display:grid;grid-template-columns:1fr;gap:14px;margin-top:18px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--design);cursor:pointer}
+  .labbtn{justify-self:start;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:100px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+  .labbtn.on{background:var(--design);color:#fff;border-color:var(--design)}
+  .readout{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.75;font-variant-numeric:tabular-nums}
+  .readout .big{font-size:17px;font-weight:800}
+  .hot{color:#d64b3c} .cold{color:#3b82d6}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+
+  /* --- 영상 + 연습문제 플레이리스트 --- */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}
+  .vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}
+  .plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;transition:.15s}
+  .pcard:hover{border-color:var(--teach)}
+  .pcard.on{border-color:var(--teach);background:color-mix(in srgb,var(--teach) 8%,transparent)}
+  .pcard .no{flex:none;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pcard.on .no{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+  .pcard .pt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  .pcard .badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+  .badge.rdy{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.soon{color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+  .badge.upd{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}
+  .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
+  .lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k teach">가르치다</span>
+    <h1>에어컨은 어떻게 시원해질까 — 압력과 온도</h1>
+    <time>인터랙티브 · 냉동 사이클(P-T 다이어그램) · 2026.07.13</time>
+
+    <h2>강의 요약</h2>
+    <p>땀이 증발할 때 피부의 열을 빼앗아 시원해지듯, 액체가 증발하며 주변 열을 흡수하는 것을 <strong>증발 잠열</strong>이라 합니다. 에어컨은 <strong>쉽게 증발하고 증발 잠열이 큰 냉매</strong>를 순환시켜 방의 열을 밖으로 퍼냅니다.</p>
+    <p>핵심은 딱 하나 — <strong>압력과 온도는 함께 움직인다</strong>는 것입니다. <strong class="hot">압력을 높이면 온도가 오르고</strong>(스프레이를 압축하듯), <strong class="cold">압력을 낮추면 온도가 떨어집니다</strong>(부탄가스를 쓰면 표면이 차가워지듯). 에어컨은 이 성질을 이용해 냉매를 "뜨겁게 만들어 밖에 버리고, 차갑게 만들어 방을 식힙니다".</p>
+    <p>냉매는 네 부품을 도는데:</p>
+    <p><strong>① 압축기</strong> — 저압 기체를 눌러 <span class="hot">고압·고온(80°C↑) 기체</span>로. (압력↑ → 온도↑)<br>
+    <strong>② 응축기</strong>(실외기) — 뜨거운 기체가 바깥 공기에 <span class="hot">열을 방출</span>하고 액체로. (기체→액체)<br>
+    <strong>③ 팽창밸브</strong> — 좁은 통로를 지나며 <span class="cold">압력·온도가 급락</span>. (압력↓ → 온도↓)<br>
+    <strong>④ 증발기</strong>(실내기) — 차가운 냉매가 <span class="cold">방 안의 열을 흡수(증발 잠열)</span>하며 기체로. 그 바람이 시원한 바람입니다.</p>
+    <p>아래에서 냉매를 따라가 보세요. 왼쪽은 사이클, 오른쪽은 그 냉매의 <strong>압력(세로)–온도(가로) 그래프</strong>입니다. 냉매가 사각형 고리를 그리며 도는 게 바로 냉동 사이클입니다.</p>
+
+    <div class="lab">
+      <div class="lab-top">
+        <div class="gwrap"><canvas id="cyc"></canvas></div>
+        <div class="gwrap"><div class="glabel">압력(P)–온도(T) 다이어그램 — 냉매의 상태 변화</div><canvas id="gpt"></canvas></div>
+      </div>
+      <div class="controls">
+        <div class="ctrl"><label>사이클 위치 (냉매 따라가기) <b><span id="vs">0</span>%</b></label><input id="ss" type="range" min="0" max="100" step="0.5" value="0"></div>
+        <button id="play" class="labbtn on">❚❚ 정지</button>
+      </div>
+      <div class="readout" id="readout"></div>
+      <div class="note">※ 온도·압력 값은 이해를 돕기 위한 대표 예시입니다(냉매·조건에 따라 다름). 점(●)의 색은 냉매 온도(파랑=차가움, 빨강=뜨거움)를 나타냅니다.</div>
+    </div>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>이 개념을 영상으로 설명합니다 (SimuLab 유튜브).</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 <strong>자유롭게 추가·순서 변경·교체·업데이트</strong>할 수 있습니다. 문제를 누르면 위 플레이어에서 바로 재생됩니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap">
+        <div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+
+    <p style="margin-top:36px"><a href="/teach-thermo.html">← 열·에너지 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}redrawAll();});
+
+// ================= 모델 =================
+// 4 상태점 (T[°C], P[bar])  1:압축기입구 2:압축기출구 3:응축기출구 4:팽창밸브출구
+const PTS=[{T:10,P:4},{T:85,P:16},{T:50,P:16},{T:5,P:4}];
+const NAMES=['압축기','응축기','팽창밸브','증발기'];
+const S={ s:0, play:true, t:0 };
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,u)=>a+(b-a)*u;
+function stateAt(s){ s=((s%1)+1)%1; const seg=Math.min(3,Math.floor(s*4)); const u=s*4-seg;
+  const A=PTS[seg], B=PTS[(seg+1)%4]; return { seg, T:lerp(A.T,B.T,u), P:lerp(A.P,B.P,u) }; }
+function tcol(T){ const u=clamp(T/95,0,1); const r=Math.round(70+(215-70)*u), g=Math.round(150+(76-150)*u), b=Math.round(235+(70-235)*u); return 'rgb('+r+','+g+','+b+')'; }
+function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
+
+// 사각 고리 경로 (시계방향): 좌(압축기)→상(응축기)→우(팽창밸브)→하(증발기)
+const CORN=[[90,270],[90,90],[290,90],[290,270],[90,270]]; // BL→TL→TR→BR→BL
+function posAt(s){ s=((s%1)+1)%1; const q=s*4, seg=Math.min(3,Math.floor(q)), u=q-seg;
+  return [lerp(CORN[seg][0],CORN[seg+1][0],u), lerp(CORN[seg][1],CORN[seg+1][1],u)]; }
+
+// ================= 사이클 그림 =================
+function drawCyc(){
+  const c=document.getElementById('cyc'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const text=css('--text'), muted=css('--muted'), line=css('--line'), surf=css('--surface'), bg=css('--bg');
+  const W=x=>x*w/360, H=y=>y*h/360;
+  const hot='#d64b3c', cold='#3b82d6';
+  function rrect(x,y,ww,hh,r,fill,stroke){ ctx.beginPath(); ctx.moveTo(W(x+r),H(y)); ctx.arcTo(W(x+ww),H(y),W(x+ww),H(y+hh),W(r)); ctx.arcTo(W(x+ww),H(y+hh),W(x),H(y+hh),W(r)); ctx.arcTo(W(x),H(y+hh),W(x),H(y),W(r)); ctx.arcTo(W(x),H(y),W(x+ww),H(y),W(r)); ctx.closePath(); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.6;ctx.stroke();} }
+
+  // 실외기/실내기 영역 라벨
+  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillText('실외기 (압축기·응축기)', W(24), H(28)); ctx.textAlign='right'; ctx.fillText('실내기 (팽창밸브·증발기)', W(340), H(352));
+
+  // 배관 고리
+  ctx.strokeStyle=line; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(W(90),H(270));
+  ctx.lineTo(W(90),H(90)); ctx.lineTo(W(290),H(90)); ctx.lineTo(W(290),H(270)); ctx.lineTo(W(90),H(270)); ctx.stroke();
+
+  // 응축기(상) — 열 방출
+  rrect(120,72,140,36,7, 'color-mix(in srgb,'+hot+' 16%,'+surf+')', hot);
+  ctx.fillStyle=hot; ctx.font='bold 12.5px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('응축기', W(190), H(90));
+  for(let i=0;i<3;i++){ const x=150+i*40; ctx.strokeStyle=hot; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(x),H(70)); ctx.lineTo(W(x),H(56)); ctx.stroke();
+    ctx.fillStyle=hot; ctx.beginPath(); ctx.moveTo(W(x),H(52)); ctx.lineTo(W(x)-4,H(60)); ctx.lineTo(W(x)+4,H(60)); ctx.closePath(); ctx.fill(); }
+  ctx.fillStyle=hot; ctx.font='10.5px Pretendard'; ctx.fillText('열 방출', W(230), H(50));
+
+  // 증발기(하) — 열 흡수
+  rrect(120,252,140,36,7, 'color-mix(in srgb,'+cold+' 16%,'+surf+')', cold);
+  ctx.fillStyle=cold; ctx.font='bold 12.5px Pretendard'; ctx.fillText('증발기', W(190), H(270));
+  for(let i=0;i<3;i++){ const x=150+i*40; ctx.strokeStyle=cold; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(x),H(290)); ctx.lineTo(W(x),H(304)); ctx.stroke();
+    ctx.fillStyle=cold; ctx.beginPath(); ctx.moveTo(W(x),H(290)); ctx.lineTo(W(x)-4,H(298)); ctx.lineTo(W(x)+4,H(298)); ctx.closePath(); ctx.fill(); }
+  ctx.fillStyle=cold; ctx.font='10.5px Pretendard'; ctx.fillText('방 안 열 흡수 → 시원한 바람', W(190), H(316));
+
+  // 압축기(좌) — 원형
+  ctx.beginPath(); ctx.arc(W(90),H(180),W(26),0,7); ctx.fillStyle=surf; ctx.fill(); ctx.strokeStyle=text; ctx.lineWidth=1.6; ctx.stroke();
+  ctx.strokeStyle=muted; ctx.lineWidth=1.6; ctx.beginPath(); for(let a=0;a<Math.PI*3.5;a+=0.25){ const rr=W(4)+a*W(1.7); const x=W(90)+rr*Math.cos(a), y=H(180)+rr*Math.sin(a); a===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke();
+  ctx.fillStyle=text; ctx.font='bold 12px Pretendard'; ctx.textAlign='center'; ctx.fillText('압축기', W(90), H(220));
+
+  // 팽창밸브(우) — 밸브 심볼(모래시계)
+  ctx.fillStyle=text; ctx.beginPath(); ctx.moveTo(W(290)-9,H(168)); ctx.lineTo(W(290)+9,H(168)); ctx.lineTo(W(290)-9,H(192)); ctx.lineTo(W(290)+9,H(192)); ctx.closePath(); ctx.fill();
+  ctx.fillStyle=text; ctx.font='bold 12px Pretendard'; ctx.textAlign='center'; ctx.fillText('팽창밸브', W(290), H(215));
+
+  // 냉매 점(●) — 온도색
+  const N=26;
+  for(let k=0;k<N;k++){ const ss=(S.s + k/N)%1; const p=posAt(ss); const st=stateAt(ss);
+    ctx.fillStyle=tcol(st.T); ctx.beginPath(); ctx.arc(W(p[0]),H(p[1]),3.4,0,7); ctx.fill(); }
+  // 현재 위치 큰 점
+  const cur=posAt(S.s), cst=stateAt(S.s); ctx.fillStyle=tcol(cst.T); ctx.strokeStyle=css('--bg'); ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(W(cur[0]),H(cur[1]),6.5,0,7); ctx.fill(); ctx.stroke();
+}
+
+// ================= P-T 다이어그램 =================
+function drawPT(){
+  const c=document.getElementById('gpt'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const text=css('--text'), muted=css('--muted'), line=css('--line');
+  const pad={l:52,r:16,t:22,b:34}; const Tmax=100, Pmax=20;
+  const gx=T=>pad.l+(T/Tmax)*(w-pad.l-pad.r), gy=P=>pad.t+(1-P/Pmax)*(h-pad.t-pad.b);
+  // 축
+  ctx.strokeStyle=line; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,h-pad.b); ctx.lineTo(w-pad.r,h-pad.b); ctx.stroke();
+  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('온도 T [°C] →', (pad.l+w-pad.r)/2, h-8);
+  ctx.save(); ctx.translate(14,(pad.t+h-pad.b)/2); ctx.rotate(-Math.PI/2); ctx.fillText('압력 P [bar] →',0,0); ctx.restore();
+  [0,50,100].forEach(t=>ctx.fillText(t,gx(t),h-pad.b+14));
+  ctx.textAlign='right'; [4,16].forEach(p=>ctx.fillText(p,pad.l-6,gy(p)+3));
+  // 저압/고압 밴드
+  ctx.strokeStyle=muted; ctx.setLineDash([3,4]);
+  ctx.beginPath(); ctx.moveTo(pad.l,gy(4)); ctx.lineTo(w-pad.r,gy(4)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad.l,gy(16)); ctx.lineTo(w-pad.r,gy(16)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=muted; ctx.font='10.5px Pretendard'; ctx.textAlign='left'; ctx.fillText('저압',pad.l+3,gy(4)-5); ctx.fillText('고압',pad.l+3,gy(16)-5);
+
+  // 사이클 루프 (1→2→3→4→1)
+  const procCol=['#d64b3c','#d68a2c','#3b82d6','#3b9d6b'];
+  for(let i=0;i<4;i++){ const A=PTS[i], B=PTS[(i+1)%4];
+    ctx.strokeStyle=procCol[i]; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(gx(A.T),gy(A.P)); ctx.lineTo(gx(B.T),gy(B.P)); ctx.stroke();
+    // 화살표
+    const mx=(A.T+B.T)/2, my=(A.P+B.P)/2, ang=Math.atan2(gy(B.P)-gy(A.P),gx(B.T)-gx(A.T));
+    ctx.fillStyle=procCol[i]; ctx.beginPath(); ctx.moveTo(gx(mx),gy(my)); ctx.lineTo(gx(mx)-9*Math.cos(ang-0.4),gy(my)-9*Math.sin(ang-0.4)); ctx.lineTo(gx(mx)-9*Math.cos(ang+0.4),gy(my)-9*Math.sin(ang+0.4)); ctx.closePath(); ctx.fill();
+  }
+  // 과정 라벨
+  ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle=procCol[0]; ctx.fillText('압축', gx(38), gy(11)-2);
+  ctx.fillStyle=procCol[1]; ctx.fillText('응축(열방출)', gx(67), gy(16)-12);
+  ctx.fillStyle=procCol[2]; ctx.fillText('팽창', gx(33), gy(9)+14);
+  ctx.fillStyle=procCol[3]; ctx.fillText('증발(열흡수)', gx(20), gy(4)+13);
+  // 상태점
+  const lbls=['① 저압기체','② 고압기체','③ 고압액체','④ 저압저온'];
+  PTS.forEach((p,i)=>{ ctx.fillStyle=text; ctx.beginPath(); ctx.arc(gx(p.T),gy(p.P),3.5,0,7); ctx.fill();
+    ctx.fillStyle=muted; ctx.font='10px Pretendard'; ctx.textAlign=(i===1||i===2)?'left':'right'; ctx.textBaseline='middle';
+    ctx.fillText(lbls[i], gx(p.T)+((i===1||i===2)?8:-8), gy(p.P)+((i<2)?-9:12)); });
+  // 현재점
+  const st=stateAt(S.s); ctx.fillStyle=tcol(st.T); ctx.strokeStyle=css('--surface'); ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(gx(st.T),gy(st.P),7,0,7); ctx.fill(); ctx.stroke();
+}
+
+function updateReadout(){ const st=stateAt(S.s);
+  const acts=['압축 — 압력↑·온도↑ (저압 기체 → 고압 기체)',
+              '응축 — 바깥으로 열 방출, 기체 → 액체 (고압 유지)',
+              '팽창 — 좁은 통로 통과, 압력↓·온도↓ (급격히 차가워짐)',
+              '증발 — 방 안 열 흡수(증발 잠열), 액체 → 기체 (저압 유지)'];
+  const phase=['기체','기체 → 액체','액체 → 혼합','혼합 → 기체'][st.seg];
+  const cls = st.T>45?'hot':'cold';
+  document.getElementById('readout').innerHTML =
+    '<span class="big">'+NAMES[st.seg]+'</span> &nbsp; '+
+    '압력 <span class="tv" style="font-weight:700">'+st.P.toFixed(1)+' bar</span> ('+(st.P>10?'고압':'저압')+')'+
+    ' &nbsp;·&nbsp; 온도 <span class="'+cls+'" style="font-weight:700">'+st.T.toFixed(0)+' °C</span>'+
+    ' &nbsp;·&nbsp; 상태 '+phase+'<br>'+acts[st.seg]+
+    '<br><span style="color:var(--muted);font-size:13px">핵심: 압축기가 압력을 올려 <span class="hot">뜨겁게</span> 만들어 밖에 버리고, 팽창밸브가 압력을 내려 <span class="cold">차갑게</span> 만들어 방을 식힙니다.</span>';
+}
+
+function redrawAll(){ drawCyc(); drawPT(); updateReadout(); }
+
+// 컨트롤
+document.getElementById('ss').addEventListener('input',e=>{ S.s=+e.target.value/100; document.getElementById('vs').textContent=(+e.target.value).toFixed(0); redrawAll(); });
+document.getElementById('play').addEventListener('click',function(){ S.play=!S.play; this.classList.toggle('on',S.play); this.textContent=S.play?'❚❚ 정지':'▶ 재생'; });
+
+let last=performance.now();
+function tick(now){ const dt=(now-last)/1000; last=now;
+  if(S.play){ S.s=(S.s+dt*0.11)%1; document.getElementById('ss').value=S.s*100; document.getElementById('vs').textContent=(S.s*100).toFixed(0); redrawAll(); }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll); redrawAll();
+</script>
+<script>
+/* =======================================================================
+   연습문제 풀이 강의 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : PRACTICE 배열에 { t:'제목', yt:'유튜브ID', sub:'부제(선택)' } 한 줄 추가
+   • 순서 변경   : 배열 줄 순서를 바꾸면 화면 순서도 바뀜니다
+   • 교체·업데이트: yt 값을 새 영상 ID로 바꾸고, 원하면 upd:true 추가 → '업데이트' 배지
+   • 준비중      : yt 를 '' 로 두면 '준비중'으로 표시되고, ID를 넣는 순간 재생됩니다
+   유튜브 ID = 주소 youtube.com/watch?v=XXXXXXXXXXX 의 XXXXXXXXXXX 부분
+   ======================================================================= */
+const THEORY_YT = '';
+const LESSON_TITLE = '에어컨 냉동 사이클';
+const PRACTICE = [
+  // 예) { t:'문제 제목', yt:'유튜브ID', sub:'부제(선택)' },
+];
+(function(){
+  const plist=document.getElementById('plist'), player=document.getElementById('player'),
+        theoryVid=document.getElementById('theoryVid'), plCnt=document.getElementById('plCnt');
+  if(!plist) return;
+  function embed(el, yt, title){
+    if(yt){ el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; }
+    else { el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>'; }
+  }
+  embed(theoryVid, THEORY_YT, '이론 강의 · '+LESSON_TITLE);
+  let cur=0;
+  function renderPlayer(){ if(!PRACTICE.length){ embed(player, '', '연습문제 영상 — 목록에 추가하세요'); return; } const it=PRACTICE[cur]||{}; embed(player, it.yt, (cur+1)+'. '+(it.t||'')); }
+  function badge(it){ return it.yt ? '<span class="badge rdy">▶ 영상</span>' : '<span class="badge soon">준비중</span>'; }
+  function render(){
+    plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ plist.innerHTML='<div class="pcard" style="cursor:default"><div class="pt" style="font-weight:500;color:var(--muted)">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; }
+    plist.innerHTML=PRACTICE.map((it,i)=>'<div class="pcard'+(i===cur?' on':'')+'" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div class="pt">'+it.t+(it.sub?'<small>'+it.sub+'</small>':'')+'</div>'+(it.upd?'<span class="badge upd">업데이트</span>':'')+badge(it)+'</div>').join('');
+    plist.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click',()=>{ cur=+c.dataset.i; renderPlayer(); render(); }));
+  }
+  renderPlayer(); render();
+})();
+</script>
+</body></html>

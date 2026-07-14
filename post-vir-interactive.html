@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="전압·전류·저항 — 전원과 저항 회로에서 V·R을 바꾸며 전류 I=V/R가 흐르는 것을 직접 보는 인터랙티브">
+<title>전압·전류·저항 (인터랙티브) · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  .lab-top{display:grid;grid-template-columns:340px 1fr;gap:20px}
+  @media(max-width:760px){.lab-top{grid-template-columns:1fr}}
+  canvas{display:block;width:100%}
+  #ckt{aspect-ratio:1/1;border-radius:12px;background:color-mix(in srgb,var(--teach) 6%,transparent)}
+  .graphs{display:flex;flex-direction:column;gap:12px;justify-content:center}
+  .gwrap{position:relative}
+  .glabel{position:absolute;top:5px;left:10px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+  #gV,#gR{height:150px}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-top:18px}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--teach);cursor:pointer}
+  .segrow{grid-column:1/-1;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:100px;overflow:hidden}
+  .seg button{border:none;background:var(--bg);color:var(--muted);padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer}
+  .seg button.on{background:var(--teach);color:#fff}
+  .seg .lbl{font-size:12.5px;color:var(--muted);align-self:center;margin-right:6px}
+  .readout{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.7;font-variant-numeric:tabular-nums}
+  .readout .big{font-size:19px;font-weight:800}
+  .danger{color:var(--write);font-weight:700}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+
+  /* --- 영상 + 연습문제 플레이리스트 --- */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}
+  .vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}
+  .plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;transition:.15s}
+  .pcard:hover{border-color:var(--teach)}
+  .pcard.on{border-color:var(--teach);background:color-mix(in srgb,var(--teach) 8%,transparent)}
+  .pcard .no{flex:none;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pcard.on .no{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+  .pcard .pt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  .pcard .badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+  .badge.rdy{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.soon{color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+  .badge.upd{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}
+  .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
+  .lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k teach">가르치다</span>
+    <h1>전압 · 전류 · 저항</h1>
+    <time>인터랙티브 · 회로 분석의 기초 · 2026.07.13</time>
+
+    <h2>강의 요약</h2>
+    <p><strong>회로(circuit)</strong>는 전기가 흐르는 <em>닫힌 고리</em>입니다. 경주 트랙처럼 출발점으로 되돌아와야 하고, 고리가 끊기면 전기는 흐르지 못합니다.</p>
+    <p><strong>전류(current, I)</strong>는 <em>흐르는 것</em>입니다. 실제로는 전자가 (−)에서 (+)로 이동하지만, 공학에서는 계산이 간단하도록 반대 방향의 <strong>양(+)전하가 (+)단자에서 나온다</strong>고 약속합니다(정공 전류/관용 전류). 단위는 <strong>암페어(A)</strong>.</p>
+    <p><strong>전압(voltage, V)</strong>은 전류를 <em>밀어주는 힘</em>입니다. 전압이 흐르는 게 아니라, 전압이 전류를 밀어 흐르게 합니다. 단위는 <strong>볼트(V)</strong>. "10,000 V가 위험하다"는 건 그만큼 세게 밀 수 있다는 뜻이지, 전압이 몸을 통과한다는 뜻이 아닙니다.</p>
+    <p><strong>저항(resistance, R)</strong>은 전류 흐름을 <em>방해</em>합니다. 굵은 빨대(=낮은 저항)는 쉽게 불 수 있지만, 가느다란 커피 젓개 빨대(=높은 저항)는 세게 불어야 하죠. 단위는 <strong>옴(Ω)</strong>. 굵은 전선은 저항이 작고, 머리카락보다 가는 전선은 저항이 큽니다.</p>
+    <p>이 셋의 관계 — <strong>미는 힘(V)이 클수록, 방해(R)가 작을수록 더 많이 흐른다(I)</strong> — 가 다음 강의의 <strong>옴의 법칙(I = V/R)</strong>입니다. 아래에서 직접 느껴보세요.</p>
+    <p>그 밖에: <strong>DC</strong>(직류, 배터리)는 전류가 한 방향으로 일정, <strong>AC</strong>(교류, 콘센트)는 초당 60번 방향이 바뀝니다. <strong>개방회로</strong>는 고리가 끊겨 전류 0, <strong>단락(합선)</strong>은 저항을 거치지 않는 지름길이 생겨 과전류가 흘러 발열·화재 위험이 있습니다(그래서 차단기가 있습니다).</p>
+
+    <div class="lab">
+      <div class="lab-top">
+        <div class="stage"><canvas id="ckt"></canvas></div>
+        <div class="graphs">
+          <div class="gwrap"><div class="glabel">① I–V (저항 R 고정): 전압↑ → 전류↑ (비례)</div><canvas id="gV"></canvas></div>
+          <div class="gwrap"><div class="glabel">② I–R (전압 V 고정): 저항↑ → 전류↓ (반비례)</div><canvas id="gR"></canvas></div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="ctrl"><label>전압 V (미는 힘) <b><span id="vV">12</span> V</b></label><input id="sV" type="range" min="1" max="24" step="0.5" value="12"></div>
+        <div class="ctrl"><label>저항 R (방해) <b><span id="vR">12</span> Ω</b></label><input id="sR" type="range" min="2" max="40" step="1" value="12"></div>
+        <div class="segrow">
+          <span class="lbl">회로 상태</span>
+          <div class="seg" id="segMode"><button data-m="normal" class="on">정상</button><button data-m="open">개방</button><button data-m="short">단락</button></div>
+          <span class="lbl">전류 방식</span>
+          <div class="seg" id="segAc"><button data-a="dc" class="on">DC(직류)</button><button data-a="ac">AC(교류)</button></div>
+        </div>
+      </div>
+      <div class="readout" id="readout"></div>
+      <div class="note">※ 점(●)은 관용 전류(양전하)의 흐름이며, 개수·속도가 전류 크기에 비례합니다. I = V/R는 다음 강의 "옴의 법칙" 미리보기입니다.</div>
+    </div>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>이 개념을 영상으로 설명합니다 (SimuLab 유튜브).</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 <strong>자유롭게 추가·순서 변경·교체·업데이트</strong>할 수 있습니다. 문제를 누르면 위 플레이어에서 바로 재생됩니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap">
+        <div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+    <nav class="lnav"><span style="flex:1"></span><a class="nx" href="/post-kclkvl-interactive.html"><span class="dir">다음 강의 →</span>KCL·KVL로 회로 분석하기</a></nav>
+
+    <p style="margin-top:36px"><a href="/teach-circuits.html">← 회로이론 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}});
+
+// ================= 모델 =================
+const S={ V:12, R:12, mode:'normal', ac:false, t:0, flow:0 };
+const Rshort=0.2;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function Imag(){ if(S.mode==='open') return 0; if(S.mode==='short') return S.V/Rshort; return S.V/S.R; }
+function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
+
+// ================= 회로도 =================
+function loopPath(){
+  // 시계방향: 전원(+, 위) → 위 → 오른쪽(저항) → 아래 → 전원(−)
+  if(S.mode==='short') return [[70,120],[195,120],[195,240],[70,240]];
+  return [[70,120],[290,120],[290,240],[70,240]];
+}
+function segLens(pts){ const L=[]; let tot=0; for(let i=0;i<pts.length-1;i++){ const d=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1]); L.push(d); tot+=d;} return {L,tot}; }
+function ptAt(pts,frac){ const {L,tot}=segLens(pts); let d=((frac%1)+1)%1*tot; for(let i=0;i<L.length;i++){ if(d<=L[i]){ const u=d/L[i]; return [pts[i][0]+(pts[i+1][0]-pts[i][0])*u, pts[i][1]+(pts[i+1][1]-pts[i][1])*u]; } d-=L[i]; } return pts[pts.length-1]; }
+
+function drawCkt(){
+  const c=document.getElementById('ckt'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const text=css('--text'), muted=css('--muted'), teach=css('--teach'), blue=css('--design'), rose=css('--write'), surf=css('--surface');
+  const W=x=>x*w/360, H=y=>y*h/360;
+  const wire=(x1,y1,x2,y2,col,lw)=>{ ctx.strokeStyle=col||text; ctx.lineWidth=lw||2; ctx.beginPath(); ctx.moveTo(W(x1),H(y1)); ctx.lineTo(W(x2),H(y2)); ctx.stroke(); };
+
+  const shorted=S.mode==='short', open=S.mode==='open';
+  // 기본 사각 배선
+  wire(70,120,290,120, text); wire(290,240,70,240, text);
+  // 오른쪽: 저항(정상/개방) 또는 short시 흐릿
+  const resCol = shorted? muted : text;
+  // 저항 지그재그 (x=290, y 120..240)
+  ctx.strokeStyle=resCol; ctx.lineWidth=2; ctx.globalAlpha=shorted?0.4:1; let yy=H(150); ctx.beginPath(); ctx.moveTo(W(290),H(120)); ctx.lineTo(W(290),H(150));
+  for(let i=0;i<6;i++){ yy+=H(60)/6; ctx.lineTo(W(290)+(i%2?-7:7),yy-H(60)/12); ctx.lineTo(W(290),yy);} ctx.lineTo(W(290),H(240)); ctx.stroke(); ctx.globalAlpha=1;
+  ctx.fillStyle=resCol; ctx.font='12.5px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('R = '+S.R+' Ω', W(300), H(180));
+
+  // short 바이패스 배선
+  if(shorted){ wire(195,120,195,240, rose, 3);
+    ctx.fillStyle=rose; ctx.font='bold 12px Pretendard'; ctx.textAlign='center'; ctx.fillText('단락', W(195), H(110)); }
+  // open 스위치(윗변 끊김)
+  if(open){ ctx.clearRect(W(165),H(112),W(48),H(16)); wire(70,120,168,120,text); wire(212,120,290,120,text);
+    ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(168),H(120)); ctx.lineTo(W(206),H(104)); ctx.stroke();
+    ctx.fillStyle=muted; ctx.beginPath(); ctx.arc(W(168),H(120),2.6,0,7); ctx.arc(W(212),H(120),2.6,0,7); ctx.fill();
+    ctx.fillStyle=text; ctx.font='12px Pretendard'; ctx.textAlign='center'; ctx.fillText('개방(스위치 off)', W(190), H(96)); }
+
+  // 전원(왼쪽): 원형 소스
+  const scx=70, scy=180;
+  wire(scx,120,scx,scy-26,text); wire(scx,scy+26,scx,240,text);
+  ctx.beginPath(); ctx.arc(W(scx),H(scy),W(26),0,7); ctx.fillStyle=surf; ctx.fill(); ctx.strokeStyle=teach; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle=teach; ctx.textAlign='center';
+  if(S.ac){ ctx.font='16px Pretendard'; ctx.fillText('∿', W(scx), H(scy)); }
+  else { ctx.font='bold 15px Pretendard'; ctx.fillText('+', W(scx), H(scy-9)); ctx.fillText('–', W(scx), H(scy+10)); }
+  ctx.font='12.5px Pretendard'; ctx.fillText('V = '+S.V+' V', W(scx), H(scy+42));
+
+  // 전류 점(●)
+  const I=Imag(), pts=loopPath();
+  if(!open && I>0){
+    const N = clamp(Math.round(4+I*1.1), 4, 22);
+    const dir = S.ac ? Math.sign(Math.sin(2*Math.PI*S.t)) || 1 : 1;
+    const col = shorted? rose : blue;
+    for(let k=0;k<N;k++){ const f=(S.flow*dir + k/N); const p=ptAt(pts,f);
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(W(p[0]),H(p[1]), shorted?3.6:3, 0,7); ctx.fill(); }
+    // 방향 화살표(윗변)
+    const a=ptAt(pts,0.12), col2=col; ctx.fillStyle=col2;
+    const ax=W(a[0]),ay=H(a[1]), dd=dir;
+    ctx.beginPath(); ctx.moveTo(ax+dd*7,ay); ctx.lineTo(ax-dd*4,ay-5); ctx.lineTo(ax-dd*4,ay+5); ctx.closePath(); ctx.fill();
+  }
+  // 라벨
+  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center';
+  ctx.fillText('닫힌 고리(회로)', W(180), H(272));
+}
+
+// ================= 관계 그래프 =================
+function graph(id,xmin,xmax,ymax,fnY,xNow,xticks,unit,col){
+  const c=document.getElementById(id); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const pad={l:44,r:14,t:20,b:20};
+  const gx=x=>pad.l+((x-xmin)/(xmax-xmin))*(w-pad.l-pad.r), gy=y=>pad.t+(1-y/ymax)*(h-pad.t-pad.b);
+  const line=css('--line'), muted=css('--muted');
+  ctx.strokeStyle=line; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,h-pad.b); ctx.lineTo(w-pad.r,h-pad.b); ctx.stroke();
+  ctx.strokeStyle=col; ctx.lineWidth=2.3; ctx.beginPath(); let started=false;
+  for(let x=xmin;x<=xmax;x+=(xmax-xmin)/120){ const y=clamp(fnY(x),0,ymax*1.3); const px=gx(x),py=gy(Math.min(y,ymax)); if(!started){ctx.moveTo(px,py);started=true;} else ctx.lineTo(px,py);} ctx.stroke();
+  // 마커
+  const yv=clamp(fnY(xNow),0,ymax); ctx.strokeStyle=muted; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(gx(xNow),pad.t); ctx.lineTo(gx(xNow),h-pad.b); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(gx(xNow),gy(yv),4.5,0,7); ctx.fill();
+  ctx.fillStyle=muted; ctx.font='10px Pretendard'; ctx.textAlign='right'; ctx.fillText(ymax.toFixed(ymax<10?1:0),pad.l-5,gy(ymax)+3); ctx.fillText('0',pad.l-5,gy(0)+3);
+  ctx.textAlign='center'; xticks.forEach(t=>ctx.fillText(t+unit,gx(t),h-6));
+}
+function drawGV(){ const ymax=Math.max(0.5,24/S.R*1.05); graph('gV',0,24,ymax, v=>v/S.R, S.V,[0,12,24],'V',css('--teach')); }
+function drawGR(){ const ymax=Math.max(0.5,S.V/2*1.05); graph('gR',2,40,ymax, r=>S.V/r, S.R,[2,20,40],'Ω',css('--design')); }
+
+function fmtI(I){ if(I>=1) return I.toFixed(2)+' A'; return (I*1000).toFixed(0)+' mA'; }
+function updateReadout(){ const I=Imag();
+  let msg, cls='';
+  if(S.mode==='open') msg='<span class="danger">개방회로 — 고리가 끊겨 전류가 흐르지 않습니다 (I = 0).</span>';
+  else if(S.mode==='short') msg='<span class="danger">⚠ 단락(합선) — 저항을 거치지 않는 지름길로 과전류! 발열·화재 위험, 차단기 작동.</span>';
+  else msg='<span style="color:'+css('--teach')+'">미는 힘(V)이 셀수록, 방해(R)가 작을수록 전류가 많이 흐릅니다.</span>';
+  document.getElementById('readout').innerHTML =
+    '<span class="big">I = V / R = '+S.V+' / '+(S.mode==='short'?Rshort:S.R)+' = <span style="color:'+(S.mode==='normal'?css('--teach'):css('--write'))+'">'+fmtI(I)+'</span></span>'+
+    ' &nbsp; ('+(S.ac?'AC 교류 — 방향이 주기적으로 바뀜':'DC 직류 — 한 방향 일정')+')<br>'+msg+
+    '<br><span style="color:var(--muted);font-size:13px">빨대 비유 — 전압=부는 힘, 전류=지나가는 공기, 저항=빨대의 좁기</span>';
+}
+
+function redrawAll(){ drawCkt(); drawGV(); drawGR(); updateReadout(); }
+
+// 컨트롤
+document.getElementById('sV').addEventListener('input',e=>{S.V=+e.target.value; document.getElementById('vV').textContent=S.V; redrawAll();});
+document.getElementById('sR').addEventListener('input',e=>{S.R=+e.target.value; document.getElementById('vR').textContent=S.R; redrawAll();});
+document.getElementById('segMode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.mode=b.dataset.m;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); redrawAll(); });
+document.getElementById('segAc').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.ac=(b.dataset.a==='ac');
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); redrawAll(); });
+
+// 애니메이션
+let last=performance.now();
+function tick(now){ const dt=(now-last)/1000; last=now; S.t+=dt;
+  const I=Imag(); const spd=clamp(I/30,0,0.06)+0.004;
+  S.flow=(S.flow+dt*spd*6)%1;
+  drawCkt(); anim=requestAnimationFrame(tick);
+}
+let anim=requestAnimationFrame(tick);
+window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll);
+redrawAll();
+</script>
+<script>
+/* =======================================================================
+   연습문제 풀이 강의 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : PRACTICE 배열에 { t:'제목', yt:'유튜브ID', sub:'부제(선택)' } 한 줄 추가
+   • 순서 변경   : 배열 줄 순서를 바꾸면 화면 순서도 바뀜니다
+   • 교체·업데이트: yt 값을 새 영상 ID로 바꾸고, 원하면 upd:true 추가 → '업데이트' 배지
+   • 준비중      : yt 를 '' 로 두면 '준비중'으로 표시되고, ID를 넣는 순간 재생됩니다
+   유튜브 ID = 주소 youtube.com/watch?v=XXXXXXXXXXX 의 XXXXXXXXXXX 부분
+   ======================================================================= */
+const THEORY_YT = '';
+const LESSON_TITLE = '전압·전류·저항 — 옴의 법칙';
+const PRACTICE = [
+  // 예) { t:'문제 제목', yt:'유튜브ID', sub:'부제(선택)' },
+];
+(function(){
+  const plist=document.getElementById('plist'), player=document.getElementById('player'),
+        theoryVid=document.getElementById('theoryVid'), plCnt=document.getElementById('plCnt');
+  if(!plist) return;
+  function embed(el, yt, title){
+    if(yt){ el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; }
+    else { el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>'; }
+  }
+  embed(theoryVid, THEORY_YT, '이론 강의 · '+LESSON_TITLE);
+  let cur=0;
+  function renderPlayer(){ if(!PRACTICE.length){ embed(player, '', '연습문제 영상 — 목록에 추가하세요'); return; } const it=PRACTICE[cur]||{}; embed(player, it.yt, (cur+1)+'. '+(it.t||'')); }
+  function badge(it){ return it.yt ? '<span class="badge rdy">▶ 영상</span>' : '<span class="badge soon">준비중</span>'; }
+  function render(){
+    plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ plist.innerHTML='<div class="pcard" style="cursor:default"><div class="pt" style="font-weight:500;color:var(--muted)">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; }
+    plist.innerHTML=PRACTICE.map((it,i)=>'<div class="pcard'+(i===cur?' on':'')+'" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div class="pt">'+it.t+(it.sub?'<small>'+it.sub+'</small>':'')+'</div>'+(it.upd?'<span class="badge upd">업데이트</span>':'')+badge(it)+'</div>').join('');
+    plist.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click',()=>{ cur=+c.dataset.i; renderPlayer(); render(); }));
+  }
+  renderPlayer(); render();
+})();
+</script>
+</body></html>

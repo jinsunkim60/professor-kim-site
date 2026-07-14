@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="원주파수 ω=2πf와 sin(ωt) — 원이 도는 것이 사인파가 되는 과정을 직접 조작하며 보는 인터랙티브">
+<title>원주파수 ω와 sin(ωt) (인터랙티브) · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  canvas{display:block;width:100%}
+  #stage{aspect-ratio:2.1/1;border-radius:12px;background:color-mix(in srgb,var(--design) 5%,transparent)}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-top:18px;align-items:end}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--design);cursor:pointer}
+  .labbtn{justify-self:start;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:100px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer}
+  .labbtn.on{background:var(--design);color:#fff;border-color:var(--design)}
+  .readout{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.8;font-variant-numeric:tabular-nums}
+  .readout .big{font-size:17px;font-weight:800}
+  .k1{color:var(--design)} .k2{color:var(--teach)}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+
+  /* --- 영상 + 연습문제 플레이리스트 --- */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}
+  .vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}
+  .plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;transition:.15s}
+  .pcard:hover{border-color:var(--teach)}
+  .pcard.on{border-color:var(--teach);background:color-mix(in srgb,var(--teach) 8%,transparent)}
+  .pcard .no{flex:none;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pcard.on .no{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+  .pcard .pt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  .pcard .badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+  .badge.rdy{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.soon{color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+  .badge.upd{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}
+  .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
+  .lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k design">회로이론 · AC·페이저</span>
+    <h1>원주파수 ω와 sin(ωt)</h1>
+    <time>인터랙티브 · 원이 그리는 사인파 · 2026.07.13</time>
+
+    <h2>강의 요약</h2>
+    <p>사인 함수는 원래 <strong>각도의 함수</strong>입니다: <code>sin(θ)</code>. 단위원 위에서 반지름을 각도 θ만큼 돌렸을 때의 <em>세로 높이</em>가 곧 <code>sin(θ)</code>죠.</p>
+    <p>그런데 그 반지름이 <strong>일정한 속도로 계속 돈다</strong>고 해봅시다. 1초에 원을 <strong>f 바퀴</strong> 돈다면, 이 <strong>f</strong>가 바로 <strong>주파수(Hz)</strong>입니다 — 1초에 사인파가 몇 주기 반복되는가와 같은 값이죠. 원을 한 바퀴 도는 각도는 <code>2π</code>(라디안)이므로, 1초에 도는 각도는 <code>2π·f</code>가 됩니다. 이 <strong>초당 각도(각속도)</strong>를 <strong class="k1">원주파수 ω = 2πf</strong> 라고 부릅니다.</p>
+    <p>그러면 시간 <strong>t</strong>초가 지났을 때 돌아간 각도는 <strong class="k1">θ = ω·t</strong> 입니다 (각도가 시간에 비례해 커짐). 이걸 <code>sin(θ)</code>에 대입하면:</p>
+    <p style="text-align:center;font-size:19px"><code>sin(θ) = sin(ω·t)</code> &nbsp; — <strong>각도의 함수가 시간의 함수로 치환</strong></p>
+    <p>즉 <strong>같은 사인파를 가로축만 바꿔 보는 것</strong>입니다. 가로축을 <strong class="k1">각도 θ</strong>로 보면 한 주기 = <code>2π</code>, 가로축을 <strong class="k2">시간 t</strong>로 보면 한 주기 = <code>T = 1/f</code> 초. 아래에서 왼쪽 원이 도는 것이 오른쪽 사인파를 그려내는 걸 직접 보세요. <strong>주파수 f</strong>를 바꾸면 회전이 빨라지고(ω↑) 사인파가 촘촘해집니다.</p>
+
+    <div class="lab">
+      <div class="gwrap"><canvas id="stage"></canvas></div>
+      <div class="controls">
+        <div class="ctrl"><label>주파수 f <b><span id="vf">1.0</span> Hz</b></label><input id="sf" type="range" min="0.2" max="3" step="0.1" value="1"></div>
+        <button id="play" class="labbtn on">❚❚ 정지</button>
+      </div>
+      <div class="readout" id="readout"></div>
+      <div class="note">※ 왼쪽 원의 반지름 벡터의 세로 높이(빨간 선)가 곧 sin θ이고, 그 값이 오른쪽 사인파로 이어져 그려집니다. θ = ω·t 로 시간이 흐르면 각도가 커집니다.</div>
+    </div>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>이 개념을 영상으로 설명합니다 (SimuLab 유튜브).</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 <strong>자유롭게 추가·순서 변경·교체·업데이트</strong>할 수 있습니다. 문제를 누르면 위 플레이어에서 바로 재생됩니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap">
+        <div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+    <nav class="lnav"><a class="pv" href="/post-radian-interactive.html"><span class="dir">← 이전 강의</span>호도각(라디안)과 삼각함수</a><a class="nx" href="/post-imaginary-interactive.html"><span class="dir">다음 강의 →</span>허수 j는 회전이다</a></nav>
+
+    <p style="margin-top:36px"><a href="/teach-circuits.html">← 회로이론 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}drawStage();});
+
+const S={ f:1, play:true, t:0 };
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const TAU=Math.PI*2;
+const omega=()=>TAU*S.f, period=()=>1/S.f, theta=()=>omega()*S.t;
+function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
+
+function drawStage(){
+  const c=document.getElementById('stage'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const text=css('--text'), muted=css('--muted'), line=css('--line'), blue=css('--design'), teach=css('--teach'), red='#d64b3c';
+  const W=x=>x*w/640, H=y=>y*h/300;
+  const cx=150, cyc=150, R=100, wx0=300, wx1=624, cyw=150;
+  const th=theta(), s=Math.sin(th), co=Math.cos(th);
+  const Px=cx+R*co, Py=cyc-R*s;
+
+  // 원 축
+  ctx.strokeStyle=line; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W(cx-R-14),H(cyc)); ctx.lineTo(W(cx+R+14),H(cyc)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W(cx),H(cyc-R-14)); ctx.lineTo(W(cx),H(cyc+R+14)); ctx.stroke();
+  // 원
+  ctx.strokeStyle=muted; ctx.lineWidth=1.6; ctx.beginPath(); ctx.arc(W(cx),H(cyc),W(R),0,7); ctx.stroke();
+  // 각도 호
+  ctx.strokeStyle=blue; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(W(cx),H(cyc),W(26), 0, -((th%TAU)+TAU)%TAU, true); ctx.stroke();
+  ctx.fillStyle=blue; ctx.font='12px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('θ=ωt', W(cx+30), H(cyc-14));
+  // 반지름 벡터
+  ctx.strokeStyle=blue; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(W(cx),H(cyc)); ctx.lineTo(W(Px),H(Py)); ctx.stroke();
+  // sinθ 세로 높이(빨강)
+  ctx.strokeStyle=red; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(W(Px),H(cyc)); ctx.lineTo(W(Px),H(Py)); ctx.stroke();
+  ctx.setLineDash([3,3]); ctx.strokeStyle=muted; ctx.beginPath(); ctx.moveTo(W(Px),H(Py)); ctx.lineTo(W(cx),H(Py)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=red; ctx.font='11px Pretendard'; ctx.textAlign='left'; ctx.fillText('sin θ', W(Px+6), H((cyc+Py)/2));
+  // 점
+  ctx.fillStyle=blue; ctx.beginPath(); ctx.arc(W(Px),H(Py),5,0,7); ctx.fill();
+
+  // 연결선(원 → 파형 시작)
+  ctx.setLineDash([4,4]); ctx.strokeStyle=red; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(W(Px),H(Py)); ctx.lineTo(W(wx0),H(Py)); ctx.stroke(); ctx.setLineDash([]);
+
+  // 파형 축
+  ctx.strokeStyle=line; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(W(wx0),H(cyw)); ctx.lineTo(W(wx1),H(cyw)); ctx.stroke();
+  // 사인파 (왼쪽=현재, 오른쪽=과거) — 2.5주기 표시
+  const Tspan=2.5*period(), span=wx1-wx0;
+  ctx.strokeStyle=blue; ctx.lineWidth=2.4; ctx.beginPath();
+  for(let x=wx0;x<=wx1;x+=1){ const u=(x-wx0)/span; const tt=S.t - u*Tspan; const y=cyw - R*Math.sin(omega()*tt); if(x===wx0)ctx.moveTo(W(x),H(y)); else ctx.lineTo(W(x),H(y)); }
+  ctx.stroke();
+  // 펜(현재값)
+  ctx.fillStyle=blue; ctx.beginPath(); ctx.arc(W(wx0),H(Py),4.5,0,7); ctx.fill();
+
+  // 한 주기 눈금(가로축 두 가지 의미)
+  const perPx=span*(period()/Tspan);
+  ctx.strokeStyle=muted; ctx.lineWidth=1.4;
+  [[wx0,'0'],[wx0+perPx,'']].forEach(()=>{});
+  ctx.beginPath(); ctx.moveTo(W(wx0),H(cyw+R+8)); ctx.lineTo(W(wx0),H(cyw+R+14)); ctx.moveTo(W(wx0+perPx),H(cyw+R+8)); ctx.lineTo(W(wx0+perPx),H(cyw+R+14)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W(wx0),H(cyw+R+11)); ctx.lineTo(W(wx0+perPx),H(cyw+R+11)); ctx.stroke();
+  ctx.fillStyle=teach; ctx.font='11.5px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('한 주기: 시간 T='+period().toFixed(2)+'s  =  각도 2π (360°)', W(wx0+perPx/2), H(cyw+R+30));
+  ctx.fillStyle=muted; ctx.textAlign='left'; ctx.fillText('← 현재', W(wx0), H(cyw-R-8)); ctx.textAlign='right'; ctx.fillText('과거 →', W(wx1), H(cyw-R-8));
+}
+
+function updateReadout(){ const th=theta(), deg=((th*180/Math.PI)%360+360)%360;
+  document.getElementById('readout').innerHTML =
+    '<span class="big">ω = 2πf = <span class="k1">'+omega().toFixed(2)+' rad/s</span></span>'+
+    ' &nbsp;·&nbsp; f = <span class="tv">'+S.f.toFixed(1)+' Hz</span> &nbsp;·&nbsp; T = 1/f = <span class="tv">'+period().toFixed(2)+' s</span><br>'+
+    'θ = ω·t = <span class="k1">'+deg.toFixed(0)+'°</span> ('+(th%TAU).toFixed(2)+' rad) &nbsp;→&nbsp; sin θ = sin(ωt) = <span style="color:'+css("--design")+';font-weight:700">'+Math.sin(th).toFixed(3)+'</span>'+
+    '<br><span style="color:var(--muted);font-size:13px">각도의 함수 sin(θ) 에 θ=ωt 를 넣어 시간의 함수 sin(ωt) 로 — 같은 파형, 가로축만 각도↔시간.</span>';
+}
+function redrawAll(){ drawStage(); updateReadout(); }
+
+document.getElementById('sf').addEventListener('input',e=>{ S.f=+e.target.value; document.getElementById('vf').textContent=S.f.toFixed(1); redrawAll(); });
+document.getElementById('play').addEventListener('click',function(){ S.play=!S.play; this.classList.toggle('on',S.play); this.textContent=S.play?'❚❚ 정지':'▶ 재생'; });
+
+let last=performance.now();
+function tick(now){ const dt=(now-last)/1000; last=now; if(S.play){ S.t+=dt; drawStage(); updateReadout(); } requestAnimationFrame(tick); }
+requestAnimationFrame(tick);
+window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll); redrawAll();
+</script>
+<script>
+/* =======================================================================
+   연습문제 풀이 강의 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : PRACTICE 배열에 { t:'제목', yt:'유튜브ID', sub:'부제(선택)' } 한 줄 추가
+   • 순서 변경   : 배열 줄 순서를 바꾸면 화면 순서도 바뀜니다
+   • 교체·업데이트: yt 값을 새 영상 ID로 바꾸고, 원하면 upd:true 추가 → '업데이트' 배지
+   • 준비중      : yt 를 '' 로 두면 '준비중'으로 표시되고, ID를 넣는 순간 재생됩니다
+   유튜브 ID = 주소 youtube.com/watch?v=XXXXXXXXXXX 의 XXXXXXXXXXX 부분
+   ======================================================================= */
+const THEORY_YT = '';
+const LESSON_TITLE = '원주파수 ω와 sin(ωt)';
+const PRACTICE = [
+  // 예) { t:'문제 제목', yt:'유튜브ID', sub:'부제(선택)' },
+];
+(function(){
+  const plist=document.getElementById('plist'), player=document.getElementById('player'),
+        theoryVid=document.getElementById('theoryVid'), plCnt=document.getElementById('plCnt');
+  if(!plist) return;
+  function embed(el, yt, title){
+    if(yt){ el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; }
+    else { el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>'; }
+  }
+  embed(theoryVid, THEORY_YT, '이론 강의 · '+LESSON_TITLE);
+  let cur=0;
+  function renderPlayer(){ if(!PRACTICE.length){ embed(player, '', '연습문제 영상 — 목록에 추가하세요'); return; } const it=PRACTICE[cur]||{}; embed(player, it.yt, (cur+1)+'. '+(it.t||'')); }
+  function badge(it){ return it.yt ? '<span class="badge rdy">▶ 영상</span>' : '<span class="badge soon">준비중</span>'; }
+  function render(){
+    plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ plist.innerHTML='<div class="pcard" style="cursor:default"><div class="pt" style="font-weight:500;color:var(--muted)">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; }
+    plist.innerHTML=PRACTICE.map((it,i)=>'<div class="pcard'+(i===cur?' on':'')+'" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div class="pt">'+it.t+(it.sub?'<small>'+it.sub+'</small>':'')+'</div>'+(it.upd?'<span class="badge upd">업데이트</span>':'')+badge(it)+'</div>').join('');
+    plist.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click',()=>{ cur=+c.dataset.i; renderPlayer(); render(); }));
+  }
+  renderPlayer(); render();
+})();
+</script>
+</body></html>

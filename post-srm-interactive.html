@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="6/4 SRM의 토크가 어디서 나오는지 — 인덕턴스 기울기 dL/dθ와 토크 T(θ)=½i²dL/dθ를 직접 조작하며 보는 인터랙티브">
+<title>SRM 토크는 어디서 나오는가 (인터랙티브) · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  canvas{display:block;width:100%}
+  .srmgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.srmgrid{grid-template-columns:1fr}}
+  #xsec{aspect-ratio:1/1;border-radius:12px;background:color-mix(in srgb,var(--design) 5%,transparent)}
+  .graphs{display:flex;flex-direction:column;gap:10px}
+  .gbox{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 10px 4px}
+  .gbox h4{font-size:12px;color:var(--muted);font-weight:700;margin:0 0 2px}
+  .gbox canvas{aspect-ratio:3.4/1}
+  .controls{margin-top:18px}
+  .ctrl{margin-bottom:12px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:5px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--design);cursor:pointer}
+  .abtn{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:100px;padding:7px 15px;font-size:13.5px;font-weight:700;cursor:pointer}
+  .abtn:hover{border-color:var(--design);color:var(--text)}
+  .note{font-size:12.5px;color:var(--muted);margin-top:10px}
+  /* --- 영상 + 연습문제 플레이리스트 --- */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}
+  .vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}
+  .plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;transition:.15s}
+  .pcard:hover{border-color:var(--teach)}
+  .pcard.on{border-color:var(--teach);background:color-mix(in srgb,var(--teach) 8%,transparent)}
+  .pcard .no{flex:none;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pcard.on .no{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+  .pcard .pt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  .pcard .badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+  .badge.rdy{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.soon{color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+  .badge.upd{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}
+  .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
+  .lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k design">설계하다</span>
+    <h1>SRM의 토크는 어디서 나오는가</h1>
+    <time>인터랙티브 · 6/4 스위치드 릴럭턴스 모터 · 2026.07.13</time>
+
+    <p>스위치드 릴럭턴스 모터(SRM)에는 영구자석도, 회전자 권선도 없습니다. 토크는 한 줄로 정해집니다:</p>
+    <p style="text-align:center;font-size:19px"><code>T(θ) = ½ · i² · dL/dθ</code></p>
+    <p>즉 토크는 <strong>인덕턴스가 각도에 따라 얼마나 빨리 변하는가(dL/dθ)</strong>에 비례합니다. 회전자 돌기가 통전된 고정자 극에 가까워지며 인덕턴스가 커지는 구간(dL/dθ &gt; 0)에서 정(+)토크가 나오고, 그 크기는 <strong>전류의 제곱(i²)</strong>으로 커집니다.</p>
+    <p>아래에서 <strong>회전자 위치 θ</strong>를 움직여 보세요. 왼쪽 6/4 단면(바깥=고정자·코일, 안=회전자)의 회전자가 돌고, 오른쪽 세 그래프 — <strong>인덕턴스 L(θ)</strong>, 그 <strong>기울기 dL/dθ</strong>, 그리고 그로부터 계산한 <strong>토크 T(θ)</strong>(전류 5~20 A 계열) — 의 표시점이 함께 움직입니다.</p>
+
+    <div class="lab">
+      <div class="srmgrid">
+        <div class="gwrap"><canvas id="xsec"></canvas></div>
+        <div class="graphs">
+          <div class="gbox"><h4>① 인덕턴스 L(θ) [mH]</h4><canvas id="gL"></canvas></div>
+          <div class="gbox"><h4>② 인덕턴스 기울기 dL/dθ [H/rad]</h4><canvas id="gD"></canvas></div>
+          <div class="gbox"><h4>③ 토크 T(θ) = ½·i²·dL/dθ [N·m] — 전류 5·8·11·14·17·20 A</h4><canvas id="gT"></canvas></div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="ctrl"><label>회전자 위치 θ <b><span id="vTh">10.0</span>°</b></label><input id="sTh" type="range" min="0" max="45" step="0.5" value="10"></div>
+        <div class="ctrl"><label>정렬 인덕턴스 Lₐ <b><span id="vLa">80</span> mH</b></label><input id="sLa" type="range" min="40" max="120" step="1" value="80"></div>
+        <div><button class="abtn" id="play">▶ 회전 애니메이션</button></div>
+      </div>
+      <div class="note">※ 인덕턴스 프로파일은 이상화(S자)한 교육용 모델이며 토크 수치는 예시입니다. 실제 SRM은 자기 포화로 큰 전류에서 토크 증가가 i²보다 완만합니다(자기 포화 → 상단 압축).</div>
+    </div>
+
+    <h2>무엇을 실험해 볼까</h2>
+    <p><strong>①</strong> θ를 0→45로 밀며, 인덕턴스 L이 완만히 커지고(비정렬→정렬), 그 <em>기울기</em> dL/dθ가 언덕처럼 떴다가 정렬 부근에서 다시 0으로 가는 것을 보세요. <strong>②</strong> 토크 T(θ)는 정확히 dL/dθ와 같은 언덕 모양이고, 전류가 커질수록 곡선 간격이 <code>i²</code>로 벌어집니다. <strong>③</strong> "회전 애니메이션"으로 한 스트로크(0→45°)의 토크 발생 구간을 관찰하세요 — 실제 제어는 바로 이 구간에서만 전류를 흘립니다.</p>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>이 개념을 영상으로 설명합니다 (SimuLab 유튜브).</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 <strong>자유롭게 추가·순서 변경·교체·업데이트</strong>할 수 있습니다. 문제를 누르면 위 플레이어에서 바로 재생됩니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap">
+        <div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+
+    <p style="margin-top:40px"><a href="/design.html">← 설계하다 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}redrawAll();});
+
+// ===== 모델 =====
+const M={ theta:10, La:80, play:false, ph:0 };   // theta[deg], La[mH]
+const Lu_mH=12;                                   // 비정렬 인덕턴스[mH]
+const P=45;                                       // 한 스트로크 각[deg]
+const CUR=[5,8,11,14,17,20];
+const peakTh=P/2;                                 // dL/dθ 최대 위치
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function LmH(th){ const s=clamp(th,0,P)/P; return Lu_mH + (M.La-Lu_mH)*0.5*(1-Math.cos(Math.PI*s)); }
+function dLdRad(th){ const s=clamp(th,0,P)/P; return 2*((M.La-Lu_mH)/1000)*Math.sin(Math.PI*s); } // H/rad
+function torque(th,i){ return 0.5*i*i*dLdRad(th); } // N·m
+function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
+
+// ===== 그래프 공통 =====
+function axes(ctx,w,h,pad,ymin,ymax){
+  const line=css('--line'), muted=css('--muted');
+  const gx=t=>pad.l+(w-pad.l-pad.r)*(t/P);
+  const gy=y=>h-pad.b-(h-pad.t-pad.b)*((y-ymin)/(ymax-ymin));
+  ctx.strokeStyle=line; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad.l,gy(ymin)); ctx.lineTo(w-pad.r,gy(ymin)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,h-pad.b); ctx.stroke();
+  ctx.fillStyle=muted; ctx.font='9.5px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [0,15,30,45].forEach(t=>{ ctx.fillText(t+'°', gx(t), h-pad.b+3); });
+  return {gx,gy};
+}
+function marker(ctx,gx,gy,h,pad,th,val,col){
+  const x=gx(th), y=gy(val);
+  ctx.strokeStyle=col; ctx.setLineDash([3,3]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,h-pad.b); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,3.5,0,7); ctx.fill();
+}
+function drawL(){ const c=document.getElementById('gL'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const ymax=M.La*1.1, pad={l:34,r:12,t:14,b:16}; const {gx,gy}=axes(ctx,w,h,pad,0,ymax);
+  const col=css('--teach'); ctx.strokeStyle=col; ctx.lineWidth=2.2; ctx.beginPath();
+  for(let t=0;t<=P;t+=0.25){ const x=gx(t),y=gy(LmH(t)); t===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke();
+  ctx.fillStyle=css('--muted'); ctx.font='10px Pretendard'; ctx.textAlign='right'; ctx.fillText(Math.round(ymax),pad.l-4,gy(ymax)+3); ctx.fillText('0',pad.l-4,gy(0)+3);
+  marker(ctx,gx,gy,h,pad,M.theta,LmH(M.theta),col);
+}
+function drawD(){ const c=document.getElementById('gD'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const ymax=Math.max(0.02,dLdRad(peakTh)*1.15), pad={l:40,r:12,t:14,b:16}; const {gx,gy}=axes(ctx,w,h,pad,0,ymax);
+  const col=css('--build'); ctx.strokeStyle=col; ctx.lineWidth=2.2; ctx.beginPath();
+  for(let t=0;t<=P;t+=0.25){ const x=gx(t),y=gy(dLdRad(t)); t===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke();
+  ctx.fillStyle=css('--muted'); ctx.font='10px Pretendard'; ctx.textAlign='right'; ctx.fillText(ymax.toFixed(2),pad.l-4,gy(ymax)+3); ctx.fillText('0',pad.l-4,gy(0)+3);
+  marker(ctx,gx,gy,h,pad,M.theta,dLdRad(M.theta),col);
+}
+function drawT(){ const c=document.getElementById('gT'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const ymax=Math.max(1,torque(peakTh,20)*1.12), pad={l:40,r:16,t:14,b:16}; const {gx,gy}=axes(ctx,w,h,pad,0,ymax);
+  const base=css('--design');
+  CUR.forEach((i,idx)=>{ const al=0.32+0.68*idx/(CUR.length-1); ctx.globalAlpha=al; ctx.strokeStyle=base; ctx.lineWidth=2; ctx.beginPath();
+    for(let t=0;t<=P;t+=0.25){ const x=gx(t),y=gy(torque(t,i)); t===0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke();
+    ctx.globalAlpha=1; ctx.fillStyle=base; ctx.font='9.5px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText(i+'A', gx(P)+2, gy(torque(P-0.5,i))); });
+  ctx.fillStyle=css('--muted'); ctx.font='10px Pretendard'; ctx.textAlign='right'; ctx.textBaseline='alphabetic'; ctx.fillText(ymax.toFixed(0),pad.l-4,gy(ymax)+3); ctx.fillText('0',pad.l-4,gy(0)+3);
+  const col=base; marker(ctx,gx,gy,h,pad,M.theta,torque(M.theta,20),col);
+}
+
+// ===== 6/4 단면 =====
+function drawXsec(){
+  const c=document.getElementById('xsec'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const text=css('--text'), muted=css('--muted'), line=css('--line'), teach=css('--teach'), design=css('--design'), build=css('--build');
+  const cx=w/2, cy=h/2, R=Math.min(w,h)*0.46;
+  const Rso=R, Rsi=R*0.62, Rro=R*0.56, Rri=R*0.20;   // stator out/in, rotor out/in
+  // 하우징
+  ctx.strokeStyle=line; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,cy,Rso,0,7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,Rsi,0,7); ctx.stroke();
+  // 고정자 6극 (수직 쌍 통전)
+  const spw=0.28; // 극 반각(rad)
+  for(let k=0;k<6;k++){ const a=k*Math.PI/3 - Math.PI/2;   // 상단부터
+    const energized = (k===0||k===3);
+    ctx.fillStyle = energized ? 'color-mix(in srgb,'+design+' 34%,transparent)' : 'color-mix(in srgb,'+muted+' 16%,transparent)';
+    ctx.beginPath(); ctx.moveTo(cx+Rsi*Math.cos(a-spw),cy+Rsi*Math.sin(a-spw));
+    ctx.arc(cx,cy,Rsi,a-spw,a+spw);
+    ctx.lineTo(cx+ (Rro+ (Rsi-Rro)*0.12)*Math.cos(a+spw), cy+(Rro+(Rsi-Rro)*0.12)*Math.sin(a+spw));
+    ctx.arc(cx,cy,Rro+(Rsi-Rro)*0.12,a+spw,a-spw,true); ctx.closePath(); ctx.fill();
+    if(energized){ // 코일 표시
+      ctx.fillStyle=design; ctx.font='bold 11px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      const rr=(Rsi+Rso)/2; ctx.fillText(k===0?'A':'A′', cx+rr*Math.cos(a), cy+rr*Math.sin(a)); }
+  }
+  // 회전자 4극 (theta 만큼 회전)
+  const th=M.theta*Math.PI/180;
+  ctx.fillStyle='color-mix(in srgb,'+teach+' 22%,transparent)';
+  ctx.beginPath(); ctx.arc(cx,cy,Rri,0,7); ctx.fill();
+  ctx.strokeStyle=teach; ctx.lineWidth=1.5; ctx.stroke();
+  const rpw=0.34;
+  for(let k=0;k<4;k++){ const a=k*Math.PI/2 - Math.PI/2 + th;
+    ctx.fillStyle='color-mix(in srgb,'+teach+' 30%,transparent)';
+    ctx.beginPath(); ctx.moveTo(cx+Rri*Math.cos(a-rpw),cy+Rri*Math.sin(a-rpw));
+    ctx.arc(cx,cy,Rri,a-rpw,a+rpw);
+    ctx.lineTo(cx+Rro*Math.cos(a+rpw),cy+Rro*Math.sin(a+rpw));
+    ctx.arc(cx,cy,Rro,a+rpw,a-rpw,true); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=teach; ctx.lineWidth=1.2; ctx.stroke();
+  }
+  // 샤프트
+  ctx.fillStyle=text; ctx.beginPath(); ctx.arc(cx,cy,Rri*0.28,0,7); ctx.fill();
+  // 라벨
+  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('통전 극 A–A′ (수직)', cx, cy-Rso-4<12? 14 : cy-Rso-4);
+  ctx.fillStyle=teach; ctx.fillText('회전자 θ = '+M.theta.toFixed(1)+'°', cx, cy+Rso+14);
+}
+
+function redrawAll(){ drawXsec(); drawL(); drawD(); drawT(); }
+
+// 컨트롤
+document.getElementById('sTh').addEventListener('input',e=>{ M.theta=+e.target.value; document.getElementById('vTh').textContent=M.theta.toFixed(1); redrawAll(); });
+document.getElementById('sLa').addEventListener('input',e=>{ M.La=+e.target.value; document.getElementById('vLa').textContent=M.La; redrawAll(); });
+document.getElementById('play').addEventListener('click',function(){ M.play=!M.play; this.textContent=M.play?'❚❚ 정지':'▶ 회전 애니메이션'; this.style.color=M.play?'var(--design)':''; });
+
+let last=performance.now();
+function tick(now){ const dt=(now-last)/1000; last=now;
+  if(M.play){ M.theta+=dt*22; if(M.theta>45) M.theta=0; document.getElementById('sTh').value=M.theta; document.getElementById('vTh').textContent=M.theta.toFixed(1); redrawAll(); }
+  requestAnimationFrame(tick); }
+requestAnimationFrame(tick);
+window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll); redrawAll();
+</script>
+
+<script>
+/* =======================================================================
+   연습문제 풀이 강의 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : PRACTICE 배열에 { t:'제목', yt:'유튜브ID', sub:'부제(선택)' } 한 줄 추가
+   • 순서 변경   : 배열 줄 순서를 바꾸면 화면 순서도 바뀝니다
+   • 교체·업데이트: yt 값을 새 영상 ID로 바꾸고, 원하면 upd:true 추가 → '업데이트' 배지
+   • 준비중      : yt 를 '' 로 두면 '준비중'으로 표시되고, ID를 넣는 순간 재생됩니다
+   유튜브 ID = 주소 youtube.com/watch?v=XXXXXXXXXXX 의 XXXXXXXXXXX 부분
+   ======================================================================= */
+const THEORY_YT = '';
+const LESSON_TITLE = 'SRM 토크는 어디서 나오는가';
+const PRACTICE = [
+  // 예) { t:'문제 제목', yt:'유튜브ID', sub:'부제(선택)' },
+];
+(function(){
+  const plist=document.getElementById('plist'), player=document.getElementById('player'),
+        theoryVid=document.getElementById('theoryVid'), plCnt=document.getElementById('plCnt');
+  if(!plist) return;
+  function embed(el, yt, title){
+    if(yt){ el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; }
+    else { el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>'; }
+  }
+  embed(theoryVid, THEORY_YT, '이론 강의 · '+LESSON_TITLE);
+  let cur=0;
+  function renderPlayer(){ if(!PRACTICE.length){ embed(player, '', '연습문제 영상 — 목록에 추가하세요'); return; } const it=PRACTICE[cur]||{}; embed(player, it.yt, (cur+1)+'. '+(it.t||'')); }
+  function badge(it){ return it.yt ? '<span class="badge rdy">▶ 영상</span>' : '<span class="badge soon">준비중</span>'; }
+  function render(){
+    plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ plist.innerHTML='<div class="pcard" style="cursor:default"><div class="pt" style="font-weight:500;color:var(--muted)">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; }
+    plist.innerHTML=PRACTICE.map((it,i)=>'<div class="pcard'+(i===cur?' on':'')+'" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div class="pt">'+it.t+(it.sub?'<small>'+it.sub+'</small>':'')+'</div>'+(it.upd?'<span class="badge upd">업데이트</span>':'')+badge(it)+'</div>').join('');
+    plist.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click',()=>{ cur=+c.dataset.i; renderPlayer(); render(); }));
+  }
+  renderPlayer(); render();
+})();
+</script>
+</body></html>

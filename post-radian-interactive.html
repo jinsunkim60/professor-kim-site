@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="호도각(라디안)은 각도를 원의 호 길이로 나타낸 것 — 원둘레를 곧게 펴서 한 바퀴가 2π임을 보고, 삼각함수까지 배우는 인터랙티브 강의">
+<title>호도각(라디안)과 삼각함수 (인터랙티브) · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin:8px 0 4px}
+  canvas{display:block;width:100%}
+  #stage{aspect-ratio:1.75/1;border-radius:12px;background:color-mix(in srgb,var(--design) 5%,transparent)}
+  #ropeStage{aspect-ratio:1.95/1;border-radius:12px;background:color-mix(in srgb,var(--build) 6%,transparent)}
+  .controls{margin-top:18px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+  .ctrl label b{color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--design);cursor:pointer}
+  .btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .abtn{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:100px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+  .abtn:hover{border-color:var(--design);color:var(--text)} .abtn.play{margin-left:auto}
+  .readout{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.8;font-variant-numeric:tabular-nums}
+  .readout .big{font-size:17px;font-weight:800}
+  .arc{color:var(--build)} .sinc{color:#d64b3c} .cosc{color:var(--design)} .tanc{color:var(--teach)}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 4px}
+  .tbl th,.tbl td{border:1px solid var(--line);padding:8px 6px;text-align:center}
+  .tbl th{background:var(--surface);color:var(--muted);font-weight:700}
+  .tbl td:first-child,.tbl th:first-child{text-align:left;color:var(--muted);font-weight:700;background:var(--surface)}
+
+  /* --- 영상 + 연습문제 플레이리스트 --- */
+  .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted);padding:22px}
+  .vid .ph b{color:var(--text);font-size:16px;line-height:1.4}
+  .vid .ph .pl{font-size:34px;opacity:.5}
+  .plwrap{margin-top:16px}
+  .plhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .plhead .cnt{font-size:13px;color:var(--muted)}
+  .plist{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;padding-right:4px}
+  .pcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;transition:.15s}
+  .pcard:hover{border-color:var(--teach)}
+  .pcard.on{border-color:var(--teach);background:color-mix(in srgb,var(--teach) 8%,transparent)}
+  .pcard .no{flex:none;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pcard.on .no{background:var(--teach);color:#fff;border-color:var(--teach)}
+  .pcard .pt{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+  .pcard .pt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  .pcard .badge{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+  .badge.rdy{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.soon{color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+  .badge.upd{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .lnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .lnav a{flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600}
+  .lnav a:hover{border-color:var(--teach)}
+  .lnav .dir{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:500}
+  .lnav a.nx{text-align:right}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <article class="prose" style="max-width:880px">
+    <span class="k design">회로이론 · AC·페이저 (기초)</span>
+    <h1>호도각(라디안)과 삼각함수</h1>
+    <time>인터랙티브 · 15분 강의 · 2026.07.13</time>
+
+    <h2>1. 각도를 왜 "길이"로 재나?</h2>
+    <p>우리가 익숙한 <strong>도(°)</strong>는 원을 그냥 360등분한 <em>약속</em>일 뿐입니다(왜 하필 360인지 필연적 이유가 없죠). 반면 <strong>호도각(라디안)</strong>은 각도를 <strong>원의 호(둘레)의 길이</strong>로 재는 자연스러운 방법입니다. 각도를 "돌아간 만큼의 길이"로 보는 것이죠.</p>
+
+    <h2>2. 라디안 = 원 위를 걸어간 호의 길이</h2>
+    <p>반지름 <strong>1</strong>인 <strong>단위원</strong>을 생각합시다. 이 원 위에서 각 θ만큼 돌았을 때 <strong>지나온 호(둘레)의 길이</strong> — 그 <strong>길이 자체</strong>를 <strong class="arc">θ 라디안</strong>이라고 부릅니다. 즉 <strong>각도 = 원 둘레를 따라 걸어간 거리(호의 길이)</strong>입니다.</p>
+    <p style="text-align:center;font-size:19px"><code>θ (라디안) = 단위원에서 걸어간 호의 길이</code></p>
+    <p>도(°)가 "원을 360칸으로 나눈 눈금"이라면, 라디안은 "원 둘레를 따라 실제로 이동한 <strong>길이</strong>"입니다. 각도를 <strong>길이</strong>로 바꿔 읽는 것 — 이것이 호도각의 핵심입니다.</p>
+
+    <h2>3. 전체 원 = 2π 라디안 = 360°</h2>
+    <p>단위원(반지름 1)의 둘레는 <code>2π</code>입니다. 원 한 바퀴를 곧게 펴면 그 길이가 바로 <strong>2π (≈ 6.28)</strong> — 그래서 <strong>한 바퀴(360°) = 2π 라디안</strong>, 반 바퀴(180°)는 그 절반인 <strong>π (≈ 3.14)</strong>입니다. 여기서 도↔라디안 변환이 나옵니다:</p>
+    <p style="text-align:center"><code>라디안 = 도 × (π/180)</code> &nbsp;·&nbsp; <code>도 = 라디안 × (180/π)</code></p>
+
+    <table class="tbl"><thead><tr><th>도(°)</th><td>0</td><td>30</td><td>45</td><td>60</td><td>90</td><td>180</td><td>270</td><td>360</td></tr></thead>
+    <tbody>
+      <tr><th>라디안</th><td>0</td><td>π/6</td><td>π/4</td><td>π/3</td><td>π/2</td><td>π</td><td>3π/2</td><td>2π</td></tr>
+      <tr><th>≈ (호의 길이)</th><td>0</td><td>0.52</td><td>0.79</td><td>1.05</td><td>1.57</td><td>3.14</td><td>4.71</td><td>6.28</td></tr>
+    </tbody></table>
+
+    <p><strong>원 한 바퀴를 곧게 펴면</strong> 그 길이가 바로 원둘레입니다. 단위원이라면 그 길이가 <strong>2π (≈ 6.28)</strong> — 그래서 <strong>360° = 2π 라디안</strong>, 반 바퀴는 <strong>π (≈ 3.14)</strong>. 아래 인터랙티브에서 θ를 <strong>360°</strong>로 놓으면, 호를 편 막대의 길이가 정확히 <strong>2π</strong>가 되는 걸 볼 수 있습니다.</p>
+    <p style="color:var(--muted);font-size:13.7px"><strong>π는 어디서 왔나</strong> — π는 <em>원둘레 ÷ 지름</em>으로 정의되는 <strong>무리수</strong>(≈ 3.14159…, 분수로 딱 떨어지지 않음)입니다. 기원전 3세기 <strong>아르키메데스</strong>는 곡선인 원둘레를 곧바로 잴 수 없자, 원의 <strong>안쪽과 바깥쪽에 정다각형</strong>을 그렸습니다(원을 수많은 삼각형으로 쪼갠 셈이죠). 다각형의 둘레는 직선이라 계산할 수 있으니, 변의 수를 <strong>6→12→24→48→96각형</strong>으로 늘려가며 원둘레를 위·아래에서 좁혀갔습니다. 그 결과 <code>223/71 &lt; π &lt; 22/7</code> (약 3.1408 &lt; π &lt; 3.1429)로 근사했죠. 이렇게 얻은 π가 원둘레·호 길이·라디안(2π)의 바탕이 됩니다.</p>
+
+    <div class="lab">
+      <div class="gwrap"><canvas id="ropeStage"></canvas></div>
+      <div class="controls">
+        <div class="ctrl"><label>밧줄 풀기 (원둘레 → 직선) <b>펴진 길이 <span id="ropeVal">0.00</span> / 2π</b></label><input id="ropeRange" type="range" min="0" max="100" step="1" value="0"></div>
+        <div class="btns"><button class="abtn play" id="ropeBtn">▶ 밧줄 풀기</button></div>
+      </div>
+      <div class="note">※ 원에 감긴 <strong style="color:var(--build)">밧줄(= 원둘레)</strong>을 풀어 곧게 펴면 그 길이가 <strong>2πr</strong>입니다. 단위원(r=1)이면 그 길이가 정확히 <strong>2π ≈ 6.28</strong> — 이것이 바로 원 한 바퀴 = 360° = 2π 라디안입니다.</div>
+    </div>
+
+    <h2>4. 왜 공학에서 라디안을 쓸까</h2>
+    <p>호 길이 공식 <code>s = rθ</code>, 부채꼴 넓이 <code>A = ½r²θ</code>, 각속도 <code>v = rω</code> 처럼 식이 깔끔해지고, 무엇보다 미적분에서 <code>d/dθ sin θ = cos θ</code> 가 성립하는 것이 <strong>라디안일 때만</strong>입니다. (도(°)로 쓰면 성가신 상수 π/180이 계속 붙습니다.) 그래서 원주파수 ω, 사인파 sin(ωt) 등 모든 파형·회로 해석이 라디안 위에서 이뤄집니다.</p>
+
+    <h2>5. 단위원과 삼각함수</h2>
+    <p>반지름 1인 <strong>단위원</strong> 위에서 각 θ만큼 돈 점의 좌표가 바로 <strong>(cos θ, sin θ)</strong> 입니다. <strong class="cosc">cos θ = 가로(x) 좌표</strong>, <strong class="sinc">sin θ = 세로(y) 좌표</strong>, <strong class="tanc">tan θ = sin θ / cos θ = 세로/가로</strong>. 아래에서 각을 돌리며 호가 펴지는 길이(=라디안)와 세 삼각함수를 동시에 확인하세요.</p>
+
+    <div class="lab">
+      <div class="gwrap"><canvas id="stage"></canvas></div>
+      <div class="controls">
+        <div class="ctrl"><label>각도 θ <b><span id="vd">60</span>° = <span id="vr">1.05</span> rad</b></label><input id="sd" type="range" min="0" max="360" step="1" value="60"></div>
+        <div class="btns">
+          <button class="abtn" data-d="0">0°</button><button class="abtn" data-d="30">30°</button><button class="abtn" data-d="45">45°</button>
+          <button class="abtn" data-d="60">60°</button><button class="abtn" data-d="90">90°</button><button class="abtn" data-d="180">180°</button>
+          <button class="abtn" data-d="270">270°</button><button class="abtn" data-d="360">360°</button>
+          <button class="abtn play" id="play">▶ 회전</button>
+        </div>
+      </div>
+      <div class="readout" id="readout"></div>
+      <div class="note">※ 아래 막대는 원의 호를 곧게 편 것입니다 — 그 <strong>길이가 곧 라디안</strong>입니다. 단위원(r=1) 기준, 반 바퀴에서 π(≈3.14), 한 바퀴에서 2π(≈6.28)에 눈금이 옵니다.</div>
+    </div>
+
+    <h2>6. 주요 각의 삼각함수 값</h2>
+    <table class="tbl"><thead><tr><th>각도</th><td>0°</td><td>30°</td><td>45°</td><td>60°</td><td>90°</td></tr></thead>
+    <tbody>
+      <tr><th>sin θ</th><td>0</td><td>1/2</td><td>√2/2 ≈ .71</td><td>√3/2 ≈ .87</td><td>1</td></tr>
+      <tr><th>cos θ</th><td>1</td><td>√3/2 ≈ .87</td><td>√2/2 ≈ .71</td><td>1/2</td><td>0</td></tr>
+      <tr><th>tan θ</th><td>0</td><td>1/√3 ≈ .58</td><td>1</td><td>√3 ≈ 1.73</td><td>∞</td></tr>
+    </tbody></table>
+    <p style="color:var(--muted);font-size:13.5px">외우는 팁: sin은 0°→90°에서 √0/2, √1/2, √2/2, √3/2, √4/2 (=0, ½, .71, .87, 1). cos는 그 반대 순서. tan = sin/cos.</p>
+
+    <h2>7. 정리</h2>
+    <p>라디안은 <strong>각도를 호의 길이로 잰 것</strong>(단위원 위를 걸어간 거리)이고, 한 바퀴 = 2π. 단위원 위 점의 좌표가 (cos θ, sin θ)입니다. 이 두 가지가 잡히면, 다음 강의의 <strong>원주파수 ω=2πf</strong>, <strong>sin(ωt)</strong>, <strong>페이저(허수 j)</strong>가 자연스럽게 이어집니다.</p>
+
+    <h2>▶ 이론 강의 (영상)</h2>
+    <p>이 개념을 영상으로 설명합니다 (SimuLab 유튜브).</p>
+    <div class="vid" id="theoryVid"></div>
+
+    <h2>연습문제 풀이 강의</h2>
+    <p>이 이론 아래에 연습문제 풀이 영상을 계속 이어 붙입니다. 목록은 <strong>자유롭게 추가·순서 변경·교체·업데이트</strong>할 수 있습니다. 문제를 누르면 위 플레이어에서 바로 재생됩니다.</p>
+    <div class="lab">
+      <div class="vid" id="player"></div>
+      <div class="plwrap">
+        <div class="plhead"><strong>문제 목록</strong><span class="cnt" id="plCnt"></span></div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="note">※ 준비중 항목은 유튜브 링크만 넣으면 즉시 재생됩니다.</div>
+    </div>
+    <nav class="lnav"><a class="pv" href="/post-kclkvl-interactive.html"><span class="dir">← 이전 강의</span>KCL·KVL로 회로 분석하기</a><a class="nx" href="/post-omega-sine-interactive.html"><span class="dir">다음 강의 →</span>원주파수 ω와 sin(ωt)</a></nav>
+
+    <p style="margin-top:36px"><a href="/teach-circuits.html">← 회로이론 목록으로</a></p>
+  </article>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}drawStage();});
+
+const S={ deg:60, play:false };
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const rad=()=>S.deg*Math.PI/180;
+function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
+
+function drawStage(){
+  const c=document.getElementById('stage'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
+  const text=css('--text'), muted=css('--muted'), line=css('--line'), blue=css('--design'), teach=css('--teach'), build=css('--build'), red='#d64b3c';
+  const W=x=>x*w/560, H=y=>y*h/320;
+  const cx=120, cyc=118, R=78, th=rad();
+  const Px=cx+R*Math.cos(th), Py=cyc-R*Math.sin(th);
+
+  // 축 + 원
+  ctx.strokeStyle=line; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W(cx-R-16),H(cyc)); ctx.lineTo(W(cx+R+16),H(cyc)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W(cx),H(cyc-R-16)); ctx.lineTo(W(cx),H(cyc+R+16)); ctx.stroke();
+  ctx.strokeStyle=muted; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(W(cx),H(cyc),W(R),0,7); ctx.stroke();
+  // 호 (0→θ) 강조
+  ctx.strokeStyle=build; ctx.lineWidth=5; ctx.beginPath(); ctx.arc(W(cx),H(cyc),W(R),0,-th,true); ctx.stroke();
+  // 반지름 벡터
+  ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(cx),H(cyc)); ctx.lineTo(W(Px),H(Py)); ctx.stroke();
+  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('r', W(cx+R*0.5*Math.cos(th)-6), H(cyc-R*0.5*Math.sin(th)-8));
+  // cos(가로) / sin(세로) 투영
+  ctx.strokeStyle=blue; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(W(cx),H(cyc)); ctx.lineTo(W(Px),H(cyc)); ctx.stroke();
+  ctx.strokeStyle=red; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(W(Px),H(cyc)); ctx.lineTo(W(Px),H(Py)); ctx.stroke();
+  ctx.fillStyle=blue; ctx.font='10.5px Pretendard'; ctx.fillText('cos θ', W((cx+Px)/2), H(cyc+11));
+  ctx.fillStyle=red; ctx.fillText('sin θ', W(Px+ (Math.cos(th)>=0?16:-16)), H((cyc+Py)/2));
+  ctx.fillStyle=blue; ctx.beginPath(); ctx.arc(W(Px),H(Py),4.5,0,7); ctx.fill();
+
+  // 호를 편 막대 (아래) — 길이 자체가 라디안(호의 길이)
+  const bx0=40, by=250, u=R;                    // 1 라디안 = R px (단위원 호의 길이)
+  const totalPx=Math.min(W(bx0)+W(u)*th, w-W(24)) - W(bx0);
+  ctx.strokeStyle=build; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(W(bx0),H(by)); ctx.lineTo(W(bx0)+totalPx,H(by)); ctx.stroke();
+  // π 기준 눈금 (반 바퀴 π, 한 바퀴 2π)
+  ctx.strokeStyle=muted; ctx.lineWidth=1.2; ctx.fillStyle=muted; ctx.font='10.5px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  const marks=[[Math.PI/2,'π/2'],[Math.PI,'π'],[3*Math.PI/2,'3π/2'],[2*Math.PI,'2π']];
+  marks.forEach(m=>{ if(th>=m[0]-0.001){ const xx=W(bx0)+W(u)*m[0]; if(xx<=W(bx0)+totalPx+1){
+    ctx.beginPath(); ctx.moveTo(xx,H(by-9)); ctx.lineTo(xx,H(by+9)); ctx.stroke();
+    ctx.fillText(m[1], xx, H(by+22)); } } });
+  const full = th>6.2;
+  ctx.fillStyle=text; ctx.textAlign='left'; ctx.font='12px Pretendard';
+  ctx.fillText(full?'원 한 바퀴를 곧게 펴면 → 둘레 = 2π':'호를 곧게 펴면 → 그 길이가 곧 라디안', W(bx0), H(by-18));
+  ctx.fillStyle=build; ctx.font='bold 13px Pretendard';
+  ctx.fillText('호의 길이 = '+th.toFixed(2)+(full?'  = 2π  (≈ 6.28 = 360°)':' 라디안'), W(bx0), H(by+40));
+}
+
+function updateReadout(){ const t=rad(), s=Math.sin(t), co=Math.cos(t), tn=Math.abs(co)<1e-6?'∞':(s/co).toFixed(2);
+  document.getElementById('readout').innerHTML =
+    '<span class="big">θ = '+Math.round(S.deg)+'° = <span class="arc">'+t.toFixed(3)+' 라디안</span></span>'+
+    ' &nbsp;·&nbsp; 단위원 위를 걸어간 호의 길이 = '+t.toFixed(2)+'<br>'+
+    'sin θ = <span class="sinc" style="font-weight:700">'+s.toFixed(3)+'</span> &nbsp;·&nbsp; '+
+    'cos θ = <span class="cosc" style="font-weight:700">'+co.toFixed(3)+'</span> &nbsp;·&nbsp; '+
+    'tan θ = <span class="tanc" style="font-weight:700">'+tn+'</span>'+
+    '<br><span style="color:var(--muted);font-size:13px">라디안 = 단위원 위를 걸어간 호의 길이. 한 바퀴 = 2π ≈ 6.28. 단위원 위 점 = (cos θ, sin θ).</span>';
+}
+function redrawAll(){ drawStage(); updateReadout(); }
+function setDeg(d){ d=+d; if(d>360)d-=360; if(d<0)d+=360; S.deg=d; document.getElementById('sd').value=d;
+  document.getElementById('vd').textContent=Math.round(d); document.getElementById('vr').textContent=rad().toFixed(2); redrawAll(); }
+
+document.getElementById('sd').addEventListener('input',e=>setDeg(+e.target.value));
+document.querySelectorAll('.abtn[data-d]').forEach(b=>b.addEventListener('click',()=>setDeg(+b.dataset.d)));
+document.getElementById('play').addEventListener('click',function(){ S.play=!S.play; this.textContent=S.play?'❚❚ 정지':'▶ 회전'; this.style.color=S.play?'var(--design)':''; });
+
+let last=performance.now();
+function tick(now){ const dt=(now-last)/1000; last=now; if(S.play){ setDeg(S.deg+dt*60); } requestAnimationFrame(tick); }
+requestAnimationFrame(tick);
+window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll); redrawAll();
+
+// ===== 밧줄 애니메이션: 원둘레를 풀면 = 2π =====
+(function(){
+  const c=document.getElementById('ropeStage'); if(!c) return;
+  const btn=document.getElementById('ropeBtn'), range=document.getElementById('ropeRange'), valEl=document.getElementById('ropeVal');
+  let p=0, playing=false, last=0;
+  const cs=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  function fit2(){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
+    c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const x=c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); return {ctx:x,w:r.width,h:r.height}; }
+  function draw(){
+    const {ctx,w,h}=fit2(); ctx.clearRect(0,0,w,h);
+    const text=cs('--text'), muted=cs('--muted'), line=cs('--line'), rope=cs('--build'), blue=cs('--design');
+    const LW=560, LH=290; const W=x=>x*w/LW, H=y=>y*h/LH;
+    const cx=115, cyc=100, R=66, C=2*Math.PI*R;
+    const remain=2*Math.PI*(1-p);            // 아직 원에 감긴 각
+    const a0=-Math.PI/2;                      // 고정단 = 꼭대기
+    const bx0=40, by=232, Lstraight=C*p;      // 펴진 직선 길이(px)
+    // 가이드 원 + 반지름
+    ctx.strokeStyle=line; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(W(cx),H(cyc),W(R),0,7); ctx.stroke();
+    ctx.strokeStyle=muted; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(W(cx),H(cyc)); ctx.lineTo(W(cx),H(cyc-R)); ctx.stroke();
+    ctx.fillStyle=muted; ctx.font='10.5px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('r =1', W(cx+4), H(cyc-R/2));
+    // 남은 밧줄(원 위)
+    ctx.lineCap='round'; ctx.strokeStyle=rope; ctx.lineWidth=7;
+    if(remain>0.001){ ctx.beginPath(); ctx.arc(W(cx),H(cyc),W(R), a0, a0+remain); ctx.stroke(); }
+    // 곧게 편 밧줄
+    ctx.beginPath(); ctx.moveTo(W(bx0),H(by)); ctx.lineTo(W(bx0)+W(Lstraight),H(by)); ctx.stroke();
+    ctx.lineCap='butt';
+    // 자유단 → 직선 끝 연결(벗겨지는 지점)
+    const feX=cx+R*Math.cos(a0+remain), feY=cyc+R*Math.sin(a0+remain), seX=bx0+Lstraight;
+    if(p>0.002 && p<0.998){ ctx.strokeStyle=blue; ctx.setLineDash([4,4]); ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(W(feX),H(feY)); ctx.lineTo(W(seX),H(by)); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.fillStyle=blue; ctx.beginPath(); ctx.arc(W(seX),H(by),4.2,0,7); ctx.fill();
+    if(p<0.998){ ctx.beginPath(); ctx.arc(W(feX),H(feY),4.2,0,7); ctx.fill(); }
+    // π · 2π 눈금
+    ctx.strokeStyle=muted; ctx.lineWidth=1.2; ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    [[Math.PI*R,'π'],[2*Math.PI*R,'2π']].forEach(m=>{ if(Lstraight>=m[0]-0.5){ const xx=W(bx0)+W(m[0]);
+      ctx.beginPath(); ctx.moveTo(xx,H(by-11)); ctx.lineTo(xx,H(by+11)); ctx.stroke(); ctx.fillText(m[1],xx,H(by+26)); } });
+    // 라벨
+    ctx.fillStyle=text; ctx.textAlign='left'; ctx.font='12px Pretendard';
+    ctx.fillText('원둘레 = 밧줄 길이 = 2πr', W(cx+R+16), H(cyc-6));
+    ctx.fillStyle=rope; ctx.font='bold 14px Pretendard';
+    ctx.fillText(p>=0.998?'곧게 편 밧줄 = 둘레 = 2π  (≈ 6.28)':'풀린 길이 = '+(2*Math.PI*p).toFixed(2), W(bx0), H(by-16));
+    if(range) range.value=Math.round(p*100);
+    if(valEl) valEl.textContent=(2*Math.PI*p).toFixed(2);
+  }
+  function step(now){ if(!last)last=now; const dt=(now-last)/1000; last=now;
+    if(playing){ p+=dt/3.4; if(p>=1){ p=1; playing=false; btn.textContent='↺ 다시 풀기'; } }
+    draw(); if(playing) requestAnimationFrame(step); else last=0; }
+  btn.addEventListener('click',function(){ if(p>=1) p=0; playing=true; this.textContent='밧줄 푸는 중…'; last=0; requestAnimationFrame(step); });
+  range.addEventListener('input',function(e){ playing=false; p=(+e.target.value)/100; btn.textContent=(p>=1?'↺ 다시 풀기':'▶ 밧줄 풀기'); draw(); });
+  window.addEventListener('resize',draw); window.addEventListener('load',draw); draw();
+})();
+</script>
+<script>
+/* =======================================================================
+   연습문제 풀이 강의 목록 — 이 부분만 고치면 됩니다.
+   • 추가        : PRACTICE 배열에 { t:'제목', yt:'유튜브ID', sub:'부제(선택)' } 한 줄 추가
+   • 순서 변경   : 배열 줄 순서를 바꾸면 화면 순서도 바뀜니다
+   • 교체·업데이트: yt 값을 새 영상 ID로 바꾸고, 원하면 upd:true 추가 → '업데이트' 배지
+   • 준비중      : yt 를 '' 로 두면 '준비중'으로 표시되고, ID를 넣는 순간 재생됩니다
+   유튜브 ID = 주소 youtube.com/watch?v=XXXXXXXXXXX 의 XXXXXXXXXXX 부분
+   ======================================================================= */
+const THEORY_YT = '';
+const LESSON_TITLE = '호도각(라디안)과 삼각함수';
+const PRACTICE = [
+  // 예) { t:'문제 제목', yt:'유튜브ID', sub:'부제(선택)' },
+];
+(function(){
+  const plist=document.getElementById('plist'), player=document.getElementById('player'),
+        theoryVid=document.getElementById('theoryVid'), plCnt=document.getElementById('plCnt');
+  if(!plist) return;
+  function embed(el, yt, title){
+    if(yt){ el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+String(title).replace(/"/g,'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'; }
+    else { el.innerHTML='<div class="ph"><span class="pl">▶</span><b>'+title+'</b><span>유튜브 영상 준비 중 — ID를 넣으면 바로 재생됩니다.</span></div>'; }
+  }
+  embed(theoryVid, THEORY_YT, '이론 강의 · '+LESSON_TITLE);
+  let cur=0;
+  function renderPlayer(){ if(!PRACTICE.length){ embed(player, '', '연습문제 영상 — 목록에 추가하세요'); return; } const it=PRACTICE[cur]||{}; embed(player, it.yt, (cur+1)+'. '+(it.t||'')); }
+  function badge(it){ return it.yt ? '<span class="badge rdy">▶ 영상</span>' : '<span class="badge soon">준비중</span>'; }
+  function render(){
+    plCnt.textContent='총 '+PRACTICE.length+'개';
+    if(!PRACTICE.length){ plist.innerHTML='<div class="pcard" style="cursor:default"><div class="pt" style="font-weight:500;color:var(--muted)">아직 등록된 연습문제 영상이 없습니다. 페이지 소스의 <b style="color:var(--text)">PRACTICE</b> 목록에 한 줄 추가하면 여기에 나타납니다.</div></div>'; return; }
+    plist.innerHTML=PRACTICE.map((it,i)=>'<div class="pcard'+(i===cur?' on':'')+'" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div class="pt">'+it.t+(it.sub?'<small>'+it.sub+'</small>':'')+'</div>'+(it.upd?'<span class="badge upd">업데이트</span>':'')+badge(it)+'</div>').join('');
+    plist.querySelectorAll('.pcard').forEach(c=>c.addEventListener('click',()=>{ cur=+c.dataset.i; renderPlayer(); render(); }));
+  }
+  renderPlayer(); render();
+})();
+</script>
+</body></html>

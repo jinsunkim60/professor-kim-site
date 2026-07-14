@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="질문과 답변 게시판"><title>Q&A · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .authbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:28px}
+  .authbar .who{font-size:14.5px;color:var(--muted)}
+  .authbar .who b{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg);
+    color:var(--text);border-radius:100px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .btn.google{background:#fff;color:#1a1a1a;border-color:#dadada}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+  .field{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    padding:11px 14px;font-size:15px;color:var(--text);font-family:inherit;margin-bottom:10px}
+  textarea.field{min-height:90px;resize:vertical;line-height:1.6}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}
+  .card h3{font-size:16px;margin-bottom:12px}
+  .q{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:12px;cursor:pointer;transition:.2s}
+  .q:hover{border-color:var(--muted)}
+  .q .qtop{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+  .q h4{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .q .meta{font-size:13px;color:var(--muted);margin-top:6px}
+  .badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap}
+  .badge.done{color:var(--teach);background:color-mix(in srgb,var(--teach) 14%,transparent)}
+  .badge.wait{color:var(--build);background:color-mix(in srgb,var(--build) 14%,transparent)}
+  .badge.prof{color:var(--write);background:color-mix(in srgb,var(--write) 14%,transparent)}
+  .answers{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:14px}
+  .ans{padding:12px 0;border-bottom:1px solid var(--line-soft)}
+  .ans .abody{font-size:15px;line-height:1.65;margin-top:4px;white-space:pre-wrap}
+  .ans .ameta{font-size:12.5px;color:var(--muted)}
+  .hidden{display:none}
+  .hint{font-size:13px;color:var(--muted);margin-top:8px}
+  .qbody-full{font-size:15px;line-height:1.7;color:var(--muted);margin-top:10px;white-space:pre-wrap}
+  .btn-del{font-size:12px;font-weight:700;color:var(--write);background:none;border:1px solid var(--line);
+    border-radius:100px;padding:3px 11px;cursor:pointer;white-space:nowrap;transition:.2s}
+  .btn-del:hover{border-color:var(--write);background:color-mix(in srgb,var(--write) 10%,transparent)}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner">
+  <a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a>
+  <nav class="nav-links">
+    <a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a>
+    <a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a>
+    <button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <section class="page-head">
+    <div class="num" style="color:var(--write)">Q&A</div>
+    <h1>질문 게시판</h1>
+    <p>궁금한 점을 남겨주시면 답변드립니다. 읽기는 누구나, 질문 작성은 로그인이 필요합니다.</p>
+  </section>
+
+  <section style="padding-top:16px">
+    <div class="authbar">
+      <div class="who" id="who">로그인 상태 확인 중…</div>
+      <div class="btn-row" id="authBtns"></div>
+    </div>
+
+    <div class="card hidden" id="newQ">
+      <h3>새 질문 작성</h3>
+      <input class="field" id="qTitle" placeholder="제목" maxlength="120">
+      <textarea class="field" id="qBody" placeholder="질문 내용을 자세히 적어주세요"></textarea>
+      <button class="btn primary" id="postQ">질문 올리기</button>
+    </div>
+    <p class="hint" id="loginHint">질문을 작성하려면 위에서 로그인하세요.</p>
+
+    <div id="list" style="margin-top:20px"><p class="muted">불러오는 중…</p></div>
+  </section>
+</main>
+
+<footer><div class="foot">
+  <div class="cr">© 2026 김진선 · 서울 송파</div>
+  <div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div>
+</div></footer>
+
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = 'https://wuxnqfxpugfculqctnvo.supabase.co';
+const SUPA_KEY = 'sb_publishable_rktDXbHJ-IIutfabCFQPtw_KAvWLFyy';
+const PROF_EMAIL = 'jinsunkim60@gmail.com';
+const db = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
+});
+
+const el = (id) => document.getElementById(id);
+let CURRENT = null;
+
+const fmt = (s) => new Date(s).toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'});
+const nameOf = (u) => (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || u.email;
+const esc = (t) => (t||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const canDelete = () => !!CURRENT && CURRENT.email === PROF_EMAIL;
+
+async function refreshAuth(){
+  const { data:{ session } } = await db.auth.getSession();
+  CURRENT = session ? session.user : null;
+  const btns = el('authBtns');
+  if (CURRENT){
+    const isProf = CURRENT.email === PROF_EMAIL;
+    el('who').innerHTML = '<b>' + esc(nameOf(CURRENT)) + '</b> 님' + (isProf ? ' · 교수' : '') + ' 으로 로그인됨';
+    btns.innerHTML = '<button class="btn" id="signout">로그아웃</button>';
+    el('signout').onclick = async () => { await db.auth.signOut(); location.reload(); };
+    el('newQ').classList.remove('hidden');
+    el('loginHint').classList.add('hidden');
+  } else {
+    el('who').textContent = '읽기는 누구나 가능합니다. 질문을 쓰려면 로그인하세요.';
+    btns.innerHTML =
+      '<button class="btn google" id="gLogin">Google로 로그인</button>' +
+      '<button class="btn" id="eLogin">이메일로 로그인</button>';
+    el('gLogin').onclick = async () => {
+      const { error } = await db.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } });
+      if (error) alert('구글 로그인은 아직 설정 준비 중입니다: ' + error.message);
+    };
+    el('eLogin').onclick = async () => {
+      const email = prompt('로그인할 이메일 주소를 입력하세요');
+      if (!email) return;
+      const { error } = await db.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin + location.pathname } });
+      if (error) alert('오류: ' + error.message);
+      else alert('입력하신 이메일로 로그인 링크를 보냈습니다. 메일함을 확인해 링크를 눌러주세요.');
+    };
+    el('newQ').classList.add('hidden');
+    el('loginHint').classList.remove('hidden');
+  }
+}
+
+async function loadQuestions(){
+  const { data:qs, error } = await db.from('questions').select('*').order('created_at',{ascending:false});
+  if (error){ el('list').innerHTML = '<p class="muted">목록을 불러오지 못했습니다: ' + esc(error.message) + '</p>'; return; }
+  if (!qs.length){ el('list').innerHTML = '<p class="muted">아직 질문이 없습니다. 첫 질문을 남겨보세요.</p>'; return; }
+  el('list').innerHTML = qs.map(q =>
+    '<div class="q" data-id="'+q.id+'">'+
+      '<div class="qtop"><h4>'+esc(q.title)+'</h4>'+
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+        (q.answered ? '<span class="badge done">답변완료</span>' : '<span class="badge wait">답변대기</span>')+
+        (canDelete(q.author_id) ? '<button class="btn-del qdel" data-del="'+q.id+'">삭제</button>' : '')+
+      '</div></div>'+
+      '<div class="meta">'+esc(q.author_name)+' · '+fmt(q.created_at)+'</div>'+
+      '<div class="detail hidden" id="d-'+q.id+'"></div>'+
+    '</div>').join('');
+  document.querySelectorAll('.q').forEach(node => {
+    node.addEventListener('click', (e) => {
+      if (e.target.closest('.detail') || e.target.closest('.qdel')) return;
+      const id = node.dataset.id;
+      const d = el('d-'+id);
+      if (!d.classList.contains('hidden')) { d.classList.add('hidden'); return; }
+      openQuestion(id, d, qs.find(x=>x.id===id));
+    });
+  });
+  document.querySelectorAll('.qdel').forEach(b => {
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm('이 질문과 달린 답변을 모두 삭제할까요? 되돌릴 수 없습니다.')) return;
+      const id = b.dataset.del;
+      await db.from('answers').delete().eq('question_id', id);
+      const { error } = await db.from('questions').delete().eq('id', id);
+      if (error){ alert('삭제 실패: ' + error.message + '\n(Supabase에서 삭제 권한(RLS 정책)이 필요할 수 있습니다.)'); return; }
+      loadQuestions();
+    });
+  });
+}
+
+async function openQuestion(id, container, q){
+  container.classList.remove('hidden');
+  container.innerHTML = '<div class="qbody-full">'+esc(q.body)+'</div><div class="answers" id="ans-'+id+'"><p class="muted">답변 불러오는 중…</p></div>';
+  const { data:answers } = await db.from('answers').select('*').eq('question_id', id).order('created_at',{ascending:true});
+  const ansBox = el('ans-'+id);
+  let html = (answers && answers.length) ? answers.map(a =>
+    '<div class="ans"><div class="ameta" style="display:flex;justify-content:space-between;gap:8px;align-items:center">'+
+    '<span>'+esc(a.author_name)+(a.is_professor?' <span class="badge prof">교수</span>':'')+' · '+fmt(a.created_at)+'</span>'+
+    (canDelete(a.author_id)?'<button class="btn-del adel" data-aid="'+a.id+'">삭제</button>':'')+'</div>'+
+    '<div class="abody">'+esc(a.body)+'</div></div>').join('') : '<p class="muted" style="font-size:14px">아직 답변이 없습니다.</p>';
+  if (CURRENT){
+    html += '<div style="margin-top:14px"><textarea class="field" id="ansBody-'+id+'" placeholder="답변 작성"></textarea>'+
+      '<button class="btn primary" id="ansBtn-'+id+'">답변 등록</button></div>';
+  } else {
+    html += '<p class="hint">답변하려면 로그인하세요.</p>';
+  }
+  ansBox.innerHTML = html;
+  ansBox.querySelectorAll('.adel').forEach(b => {
+    b.addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      if (!confirm('이 답변을 삭제할까요? 되돌릴 수 없습니다.')) return;
+      const { error } = await db.from('answers').delete().eq('id', b.dataset.aid);
+      if (error){ alert('삭제 실패: ' + error.message + '\n(Supabase에서 삭제 권한(RLS 정책)이 필요할 수 있습니다.)'); return; }
+      openQuestion(id, container, q);
+    });
+  });
+  if (CURRENT){
+    el('ansBtn-'+id).onclick = async (ev) => {
+      ev.stopPropagation();
+      const body = el('ansBody-'+id).value.trim();
+      if (!body) return;
+      const isProf = CURRENT.email === PROF_EMAIL;
+      const { error } = await db.from('answers').insert({ question_id:id, author_id:CURRENT.id, author_name:nameOf(CURRENT), body, is_professor:isProf });
+      if (error){ alert('오류: '+error.message); return; }
+      if (isProf && !q.answered){ await db.from('questions').update({ answered:true }).eq('id', id); }
+      openQuestion(id, container, q);
+      if (isProf) loadQuestions();
+    };
+  }
+}
+
+el('postQ').onclick = async () => {
+  const title = el('qTitle').value.trim();
+  const body = el('qBody').value.trim();
+  if (!title || !body){ alert('제목과 내용을 모두 입력하세요.'); return; }
+  const { error } = await db.from('questions').insert({ author_id:CURRENT.id, author_name:nameOf(CURRENT), title, body });
+  if (error){ alert('오류: '+error.message); return; }
+  el('qTitle').value=''; el('qBody').value='';
+  loadQuestions();
+};
+
+db.auth.onAuthStateChange(async () => { await refreshAuth(); loadQuestions(); });
+(async () => { await refreshAuth(); await loadQuestions(); })();
+</script>
+</body></html>

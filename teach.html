@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="전기전자공학 강의 라이브러리 — 과목별로 정리한 인터랙티브 강의"><title>가르치다 · 강의 라이브러리 · 김진선</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>(function(){try{var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}})();</script>
+<style>
+  .subjects{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media(max-width:640px){.subjects{grid-template-columns:1fr}}
+  .subj{display:block;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;position:relative;overflow:hidden;transition:.22s}
+  .subj.rdy{cursor:pointer} .subj.rdy:hover{transform:translateY(-3px);border-color:var(--sc);box-shadow:0 12px 30px -20px var(--sc)}
+  .subj .bar{position:absolute;left:0;top:0;height:100%;width:4px;background:var(--sc)}
+  .subj h3{font-size:19px;letter-spacing:-.01em;margin-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .subj .cnt{font-size:12.5px;font-weight:700;color:var(--sc)}
+  .subj .cnt.soon{color:var(--muted)}
+  .subj p{font-size:13.5px;color:var(--muted);line-height:1.55}
+</style>
+</head><body>
+<header class="nav"><div class="nav-inner"><a class="brand" href="/">김진선 <span>· Jinsun Kim</span></a><nav class="nav-links"><a href="/teach.html">가르치다</a><a href="/design.html">설계하다</a><a href="/build.html">만들다</a><a href="/write.html">쓰다</a><a href="/materials.html">자료실</a><a href="/qna.html">Q&A</a><a href="/about.html">소개</a><button class="theme-btn pill" id="themeBtn" aria-label="테마 전환">◐</button></nav></div></header>
+<main class="wrap">
+  <section class="page-head"><div class="num" style="color:var(--teach)">01 · 강의 라이브러리</div><h1>가르치다</h1><p>전기전자공학을 과목 → 단원 → 강의로 정리했습니다. 검색해서 막힌 그 문제만 골라 보고, 값을 직접 바꿔보세요.</p></section>
+  <section style="padding-top:20px"><div class="subjects">
+    <a class="subj rdy" style="--sc:var(--design)" href="/teach-circuits.html"><span class="bar"></span><h3>회로이론 <span class="cnt">강의 5</span></h3><p>옴의 법칙 · KCL/KVL · 노드·메시 해석 · 등가저항 · 테브난 · 페이저</p></a>
+    <a class="subj rdy" style="--sc:var(--write)" href="/teach-electronics.html"><span class="bar"></span><h3>전자회로 <span class="cnt">강의 1</span></h3><p>다이오드 · 트랜지스터 바이어스 · 소신호 증폭기 · 연산증폭기</p></a>
+    <a class="subj rdy" style="--sc:var(--build)" href="/teach-machines.html"><span class="bar"></span><h3>전기기기 · 모터 <span class="cnt">강의 2</span></h3><p>SRM · 인덕턴스와 토크 · DC/AC 모터 · MATLAB 시뮬레이션</p></a>
+    <a class="subj rdy" style="--sc:var(--teach)" href="/teach-thermo.html"><span class="bar"></span><h3>열 · 에너지 <span class="cnt">강의 1</span></h3><p>증발 잠열 · 냉동 사이클 · 압력–온도 관계 (에어컨의 원리)</p></a>
+    <div class="subj" style="--sc:var(--muted)"><span class="bar"></span><h3>신호와 시스템 <span class="cnt soon">준비 중</span></h3><p>컨볼루션 · 푸리에 · 라플라스 · 전달함수 · 샘플링</p></div>
+    <div class="subj" style="--sc:var(--muted)"><span class="bar"></span><h3>전자기학 <span class="cnt soon">준비 중</span></h3><p>전기장·자기장 · 가우스 · 앙페르/패러데이 · 맥스웰</p></div>
+    <div class="subj" style="--sc:var(--muted)"><span class="bar"></span><h3>제어공학 <span class="cnt soon">준비 중</span></h3><p>블록선도 · 전달함수 · 근궤적 · 보드/나이퀴스트 안정도</p></div>
+    <div class="subj" style="--sc:var(--muted)"><span class="bar"></span><h3>MATLAB · 시뮬레이션 <span class="cnt soon">준비 중</span></h3><p>각 주제의 코드와 시뮬레이션 실습</p></div>
+  </div></section>
+</main>
+<footer><div class="foot"><div class="cr">© 2026 김진선 · 서울 송파</div><div class="links"><a href="/write.html">블로그</a><a href="#">YouTube · SimuLab</a><a href="#">GitHub</a></div></div></footer>
+<script>document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn');if(!b)return;var r=document.documentElement;var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n);}catch(e){}});</script>
+</body></html>
