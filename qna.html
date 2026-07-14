@@ -91,6 +91,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('#themeBtn'
 const SUPA_URL = 'https://wuxnqfxpugfculqctnvo.supabase.co';
 const SUPA_KEY = 'sb_publishable_rktDXbHJ-IIutfabCFQPtw_KAvWLFyy';
 const PROF_EMAIL = 'jinsunkim60@gmail.com';
+const ANALYTICS_URL = 'https://dash.cloudflare.com/14f716d9b19e1b717e748aa0948cf7bb/web-analytics/overview?siteTag~in=5c31c7784ad14500893b11b5747b22a3&excludeBots=Yes';
 const db = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
   auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
 });
@@ -110,7 +111,7 @@ async function refreshAuth(){
   if (CURRENT){
     const isProf = CURRENT.email === PROF_EMAIL;
     el('who').innerHTML = '<b>' + esc(nameOf(CURRENT)) + '</b> 님' + (isProf ? ' · 교수' : '') + ' 으로 로그인됨';
-    btns.innerHTML = '<button class="btn" id="signout">로그아웃</button>';
+    btns.innerHTML = (isProf ? '<a class="btn" style="text-decoration:none" href="'+ANALYTICS_URL+'" target="_blank" rel="noopener">📊 방문 통계</a>' : '') + '<button class="btn" id="signout">로그아웃</button>';
     el('signout').onclick = async () => { await db.auth.signOut(); location.reload(); };
     el('newQ').classList.remove('hidden');
     el('loginHint').classList.add('hidden');
