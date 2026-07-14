@@ -24,7 +24,7 @@
   .lab-top{display:grid;grid-template-columns:360px 1fr;gap:20px}
   @media(max-width:760px){.lab-top{grid-template-columns:1fr}}
   canvas{display:block;width:100%}
-  #ckt{aspect-ratio:1/1.02;border-radius:12px;background:color-mix(in srgb,var(--teach) 6%,transparent)}
+  #ckt{width:100%;height:auto;border-radius:12px;background:color-mix(in srgb,var(--teach) 6%,transparent)}
   .graphs{display:flex;flex-direction:column;gap:12px;justify-content:center}
   .gwrap{position:relative}
   .glabel{position:absolute;top:5px;left:10px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
@@ -104,7 +104,7 @@
 
     <div class="lab">
       <div class="lab-top">
-        <div class="stage"><canvas id="ckt"></canvas></div>
+        <div class="stage"><svg id="ckt" viewBox="0 0 360 368" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto"></svg></div>
         <div class="graphs">
           <div class="gwrap"><div class="glabel">입력 v_in(t) [mV]</div><canvas id="gin"></canvas></div>
           <div class="gwrap"><div class="glabel">출력 v_out = V_C(t) [V] — 반전·증폭 (점선=Vcc, 0 : 클리핑 한계)</div><canvas id="gout"></canvas></div>
@@ -206,69 +206,76 @@ function isClipping(){ let c=false; for(let t=0;t<=1;t+=0.02){ const r=voutRaw(t
 function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.getBoundingClientRect();
   c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
 
-// ================= 회로도 =================
-function drawCkt(){
-  const c=document.getElementById('ckt'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
-  const text=css('--text'), muted=css('--muted'), teach=css('--teach'), blue=css('--design'), rose=css('--write');
-  const W=x=>x*w/360, H=y=>y*h/368;
-  const wire=(x1,y1,x2,y2,col)=>{ ctx.strokeStyle=col||text; ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(W(x1),H(y1)); ctx.lineTo(W(x2),H(y2)); ctx.stroke(); };
-  const dot=(x,y,col)=>{ ctx.fillStyle=col||text; ctx.beginPath(); ctx.arc(W(x),H(y),2.6,0,7); ctx.fill(); };
-  function resV(x,y,len,label,val){ const x0=W(x); let yy=H(y); const seg=H(len)/6; ctx.strokeStyle=text; ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(x0,yy);
-    for(let i=0;i<6;i++){ yy+=seg; ctx.lineTo(x0+(i%2?-5:5),yy-seg/2); ctx.lineTo(x0,yy);} ctx.stroke();
-    ctx.fillStyle=muted; ctx.font='11.5px Pretendard'; ctx.textAlign='left'; ctx.fillText(label, x0+9, H(y)+H(len)/2-6); ctx.fillStyle=text; ctx.fillText(val, x0+9, H(y)+H(len)/2+9); }
-  function capH(x,y,label){ const g=4; ctx.strokeStyle=text; ctx.lineWidth=1.8; ctx.beginPath();
-    ctx.moveTo(W(x)-g,H(y)-8); ctx.lineTo(W(x)-g,H(y)+8); ctx.moveTo(W(x)+g,H(y)-8); ctx.lineTo(W(x)+g,H(y)+8); ctx.stroke();
-    ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center'; ctx.fillText(label,W(x),H(y)-16); }
+// ===== SVG 회로도 (깔끔한 표준 기호) =====
+const NS='http://www.w3.org/2000/svg';
+const _T='var(--text)',_MU='var(--muted)',_TE='var(--teach)',_RS='var(--write)',_SF='var(--surface)',_BL='#5578ff';
+const CX=213, ICY0=44, ICY1=100;   // 컬렉터 전류 점 경로
+function _txt(x,y,s,c,sz,anc,wt){return '<text x="'+x+'" y="'+y+'" fill="'+(c||_T)+'" font-size="'+(sz||12)+'" font-family="Pretendard,sans-serif" text-anchor="'+(anc||'middle')+'" dominant-baseline="middle"'+(wt?' font-weight="'+wt+'"':'')+'>'+s+'</text>';}
+function _wire(pts,c,wd){return '<polyline points="'+pts+'" fill="none" stroke="'+(c||_T)+'" stroke-width="'+(wd||1.9)+'" stroke-linecap="round" stroke-linejoin="round"/>';}
+function _node(x,y){return '<circle cx="'+x+'" cy="'+y+'" r="3" fill="'+_T+'"/>';}
+function resVR(x,yTop,len,label,val){var w=17,yc=yTop+len/2;
+  return '<rect x="'+(x-w/2)+'" y="'+yTop+'" width="'+w+'" height="'+len+'" rx="3.5" fill="'+_SF+'" stroke="'+_T+'" stroke-width="2"/>'+
+    _txt(x+w/2+7,yc-7,label,_MU,11.5,'start',700)+_txt(x+w/2+7,yc+8,val,_T,11.5,'start');}
+function capHo(x,y,label){var g=4.5;
+  return '<line x1="'+(x-g)+'" y1="'+(y-8)+'" x2="'+(x-g)+'" y2="'+(y+8)+'" stroke="'+_T+'" stroke-width="2"/>'+
+    '<line x1="'+(x+g)+'" y1="'+(y-8)+'" x2="'+(x+g)+'" y2="'+(y+8)+'" stroke="'+_T+'" stroke-width="2"/>'+
+    _txt(x,y-16,label,_MU,11,'middle');}
 
-  ctx.textBaseline='middle';
-  // 노드 좌표
-  const bx=120, baseY=178, tx=205, tcy=baseY, cx=tx+8, ccY=tcy-26, eY=tcy+26, colNodeY=100, px=tx-12;
-
+// ================= SVG 회로도 =================
+function buildCkt(){
+  const svg=document.getElementById('ckt'); if(!svg) return;
+  const bx=120, baseY=178, tx=205, tcy=178, cx=tx+8, ccY=tcy-26, eY=tcy+26, colNodeY=100, px=tx-12;
+  let g='';
   // 레일
-  wire(30,40,330,40); wire(30,340,330,340);
-  ctx.fillStyle=teach; ctx.textAlign='left'; ctx.font='12px Pretendard'; ctx.fillText('+Vcc = '+S.Vcc+' V', W(30), H(28));
-  ctx.strokeStyle=muted; ctx.lineWidth=1.6; for(let i=0;i<3;i++){ ctx.beginPath(); ctx.moveTo(W(180)-10+i*4, H(344)+i*4); ctx.lineTo(W(180)+10-i*4, H(344)+i*4); ctx.stroke(); }
-
+  g+=_wire('30,40 330,40')+_wire('30,340 330,340');
+  g+=_txt(30,30,'+Vcc = '+S.Vcc+' V',_TE,12,'start',700);
+  // 접지 기호
+  g+='<line x1="170" y1="344" x2="190" y2="344" stroke="'+_MU+'" stroke-width="1.8"/>'+
+     '<line x1="174" y1="349" x2="186" y2="349" stroke="'+_MU+'" stroke-width="1.8"/>'+
+     '<line x1="178" y1="354" x2="182" y2="354" stroke="'+_MU+'" stroke-width="1.8"/>';
   // 분배 바이어스
-  wire(bx,40,bx,66); resV(bx,66,58,'R1','13k'); wire(bx,124,bx,baseY);
-  wire(bx,baseY,bx,200); resV(bx,200,64,'R2','7k'); wire(bx,264,bx,340);
-  dot(bx,baseY);
+  g+=_wire(bx+',40 '+bx+',66')+resVR(bx,66,58,'R₁','13k')+_wire(bx+',124 '+bx+','+baseY);
+  g+=_wire(bx+','+baseY+' '+bx+',200')+resVR(bx,200,64,'R₂','7k')+_wire(bx+',264 '+bx+',340');
+  g+=_node(bx,baseY);
   // 입력
-  wire(35,baseY,72,baseY,teach); capH(80,baseY,'C1'); wire(88,baseY,bx,baseY);
-  ctx.fillStyle=teach; ctx.textAlign='left'; ctx.font='12px Pretendard'; ctx.fillText('v_in →', W(18), H(baseY-15));
-
+  g+=_wire('35,'+baseY+' 71,'+baseY,_TE)+capHo(80,baseY,'C₁')+_wire('89,'+baseY+' '+bx+','+baseY);
+  g+=_txt(16,baseY-15,'v_in →',_TE,12,'start',700);
   // Rc & 컬렉터
-  wire(cx,ccY,cx,colNodeY); resV(cx,44,56,'Rc',S.Rc.toFixed(1)+'k'); wire(cx,40,cx,44);
-  dot(cx,colNodeY);
-  wire(cx,colNodeY,285,colNodeY); capH(292,colNodeY,'C2'); wire(300,colNodeY,322,colNodeY);
-  ctx.fillStyle=muted; ctx.textAlign='left'; ctx.font='11px Pretendard'; ctx.fillText('v_out', W(300), H(colNodeY-14));
-
+  g+=_wire(cx+',40 '+cx+',44')+resVR(cx,44,56,'Rc',S.Rc.toFixed(1)+'k')+_wire(cx+','+colNodeY+' '+cx+','+ccY);
+  g+=_node(cx,colNodeY);
+  g+=_wire(cx+','+colNodeY+' 285,'+colNodeY)+capHo(292,colNodeY,'C₂')+_wire('301,'+colNodeY+' 322,'+colNodeY);
+  g+=_txt(300,colNodeY-15,'v_out',_MU,11,'start');
   // Re & 이미터
-  wire(cx,eY,cx,264); resV(cx,264,54,'Re',S.Re.toFixed(2)+'k'); wire(cx,318,cx,340);
-  if(S.byp){ wire(cx,286,cx+34,286,teach); ctx.strokeStyle=teach; ctx.lineWidth=1.8; ctx.beginPath();
-    ctx.moveTo(W(cx+34),H(282)); ctx.lineTo(W(cx+34),H(290)); ctx.moveTo(W(cx+40),H(282)); ctx.lineTo(W(cx+40),H(290)); ctx.stroke();
-    wire(cx+40,286,cx+40,340,teach); ctx.fillStyle=teach; ctx.textAlign='left'; ctx.font='11px Pretendard'; ctx.fillText('C_E',W(cx+46),H(286)); }
-
+  g+=_wire(cx+','+eY+' '+cx+',264')+resVR(cx,264,54,'Re',S.Re.toFixed(2)+'k')+_wire(cx+',318 '+cx+',340');
+  if(S.byp){ g+=_wire(cx+',286 '+(cx+34)+',286',_TE)+
+    '<line x1="'+(cx+34)+'" y1="281" x2="'+(cx+34)+'" y2="291" stroke="'+_TE+'" stroke-width="2"/>'+
+    '<line x1="'+(cx+40)+'" y1="281" x2="'+(cx+40)+'" y2="291" stroke="'+_TE+'" stroke-width="2"/>'+
+    _wire((cx+40)+',286 '+(cx+40)+',340',_TE)+_txt(cx+46,286,'C_E',_TE,11,'start'); }
   // 트랜지스터 (원형 NPN)
-  wire(bx,baseY,px,baseY);
-  ctx.strokeStyle=text; ctx.lineWidth=1.4; ctx.beginPath(); ctx.arc(W(tx+2),H(tcy),W(19),0,7); ctx.stroke();
-  ctx.lineWidth=2.6; ctx.beginPath(); ctx.moveTo(W(px),H(tcy-11)); ctx.lineTo(W(px),H(tcy+11)); ctx.stroke();
-  ctx.lineWidth=1.8; wire(px,tcy-5,cx,ccY); wire(px,tcy+5,cx,eY);
-  { const ax=W(cx),ay=H(eY); const a=Math.atan2(H(eY)-H(tcy+5),W(cx)-W(px)); ctx.fillStyle=text; ctx.beginPath(); ctx.moveTo(ax,ay);
-    ctx.lineTo(ax-9*Math.cos(a-0.45),ay-9*Math.sin(a-0.45)); ctx.lineTo(ax-9*Math.cos(a+0.45),ay-9*Math.sin(a+0.45)); ctx.closePath(); ctx.fill(); }
-  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='left';
-  ctx.fillText('B',W(px-13),H(tcy-8)); ctx.fillText('C',W(cx+5),H(ccY+9)); ctx.fillText('E',W(cx+5),H(eY-3));
-
-  // 라이브 전압
+  g+=_wire(bx+','+baseY+' '+px+','+baseY);
+  g+='<circle cx="'+(tx+2)+'" cy="'+tcy+'" r="19" fill="none" stroke="'+_T+'" stroke-width="1.6"/>';
+  g+='<line x1="'+px+'" y1="'+(tcy-11)+'" x2="'+px+'" y2="'+(tcy+11)+'" stroke="'+_T+'" stroke-width="2.8"/>';
+  g+=_wire(px+','+(tcy-5)+' '+cx+','+ccY)+_wire(px+','+(tcy+5)+' '+cx+','+eY);
+  { const a=Math.atan2(eY-(tcy+5),cx-px);
+    const p1=(cx-9*Math.cos(a-0.45)).toFixed(1)+','+(eY-9*Math.sin(a-0.45)).toFixed(1);
+    const p2=(cx-9*Math.cos(a+0.45)).toFixed(1)+','+(eY-9*Math.sin(a+0.45)).toFixed(1);
+    g+='<polygon points="'+cx+','+eY+' '+p1+' '+p2+'" fill="'+_T+'"/>'; }
+  g+=_txt(px-13,tcy-8,'B',_MU,11,'start')+_txt(cx+5,ccY+9,'C',_MU,11,'start')+_txt(cx+5,eY-3,'E',_MU,11,'start');
+  // 라이브 V_C (매 프레임 갱신)
+  g+='<text id="vcLive" x="'+(cx+12)+'" y="'+(colNodeY+16)+'" font-family="Pretendard,sans-serif" font-size="12.5" font-weight="700" text-anchor="start" dominant-baseline="middle" fill="'+_TE+'"></text>';
+  g+=_txt(bx-8,baseY+27,'V_B ≈ 2.0 V',_MU,11.5,'start')+_txt(cx+12,eY+22,'V_E ≈ 1.3 V',_MU,11.5,'start');
+  g+='<g id="icdots"></g>';
+  svg.innerHTML=g;
+  const cd=svg.querySelector('#icdots');
+  for(let k=0;k<4;k++){ const c=document.createElementNS(NS,'circle'); c.setAttribute('fill',_BL); c.setAttribute('data-k',k); c.setAttribute('cx',CX); cd.appendChild(c); }
+  updateLive();
+}
+function updateLive(){
+  const svg=document.getElementById('ckt'); if(!svg) return;
   const vc=vout(S.t), clipNow=(voutRaw(S.t)>S.Vcc||voutRaw(S.t)<VSAT);
-  ctx.font='bold 12.5px Pretendard'; ctx.textAlign='left';
-  ctx.fillStyle=(clipNow?rose:teach); ctx.fillText('V_C = '+vc.toFixed(2)+' V', W(cx+12), H(colNodeY+16));
-  ctx.fillStyle=muted; ctx.font='11.5px Pretendard';
-  ctx.fillText('V_B ≈ 2.0 V', W(bx-8), H(baseY+26)); ctx.fillText('V_E ≈ 1.3 V', W(cx+12), H(eY+22));
-
-  // 전류 점(애니메이션)
+  const t=svg.querySelector('#vcLive'); if(t){ t.textContent='V_C = '+vc.toFixed(2)+' V'; t.setAttribute('fill',clipNow?_RS:_TE); }
   const icRel=clamp((S.Vcc-vc)/S.Vcc,0,1);
-  ctx.fillStyle=blue; for(let k=0;k<4;k++){ const p=((S.t*1.3+k/4)%1); const yy=44+p*(colNodeY-44); ctx.beginPath(); ctx.arc(W(cx),H(yy),2.2+2*icRel,0,7); ctx.fill(); }
+  svg.querySelectorAll('#icdots circle').forEach(function(c){ const k=+c.getAttribute('data-k'); const p=((S.t*1.3+k/4)%1); c.setAttribute('cy',ICY0+p*(ICY1-ICY0)); c.setAttribute('r',2.2+2*icRel); });
 }
 
 // ================= 파형 =================
@@ -307,7 +314,7 @@ function updateReadout(){ const av=gain(), clip=isClipping();
          : '<span style="color:'+css('--teach')+'">정상 선형 증폭 — 출력이 한계 안에서 대칭으로 스윙합니다.</span>');
 }
 
-function redrawAll(){ drawCkt(); drawIn(); drawOut(); updateReadout(); }
+function redrawAll(){ buildCkt(); drawIn(); drawOut(); updateReadout(); }
 
 // 컨트롤
 const on=(id,f)=>document.getElementById(id).addEventListener('input',f);
@@ -321,7 +328,7 @@ let anim=null;
 function toggle(){ const b=document.getElementById('play');
   if(anim){ cancelAnimationFrame(anim); anim=null; b.classList.remove('on'); b.textContent='▶ 애니메이션'; return; }
   b.classList.add('on'); b.textContent='❚❚ 정지'; let last=performance.now();
-  const step=now=>{ const dt=(now-last)/1000; last=now; S.t=(S.t+dt*0.6)%2; redrawAll(); anim=requestAnimationFrame(step); };
+  const step=now=>{ const dt=(now-last)/1000; last=now; S.t=(S.t+dt*0.6)%2; updateLive(); drawIn(); drawOut(); updateReadout(); anim=requestAnimationFrame(step); };
   anim=requestAnimationFrame(step);
 }
 document.getElementById('play').addEventListener('click',toggle);
