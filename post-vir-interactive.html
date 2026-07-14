@@ -24,7 +24,7 @@
   .lab-top{display:grid;grid-template-columns:340px 1fr;gap:20px}
   @media(max-width:760px){.lab-top{grid-template-columns:1fr}}
   canvas{display:block;width:100%}
-  #ckt{aspect-ratio:1/1;border-radius:12px;background:color-mix(in srgb,var(--teach) 6%,transparent)}
+  #ckt{width:100%;height:auto;border-radius:12px;background:color-mix(in srgb,var(--teach) 6%,transparent)}
   .graphs{display:flex;flex-direction:column;gap:12px;justify-content:center}
   .gwrap{position:relative}
   .glabel{position:absolute;top:5px;left:10px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
@@ -100,7 +100,7 @@
 
     <div class="lab">
       <div class="lab-top">
-        <div class="stage"><canvas id="ckt"></canvas></div>
+        <div class="stage"><svg id="ckt" viewBox="0 0 330 300" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto"></svg></div>
         <div class="graphs">
           <div class="gwrap"><div class="glabel">① I–V (저항 R 고정): 전압↑ → 전류↑ (비례)</div><canvas id="gV"></canvas></div>
           <div class="gwrap"><div class="glabel">② I–R (전압 V 고정): 저항↑ → 전류↓ (반비례)</div><canvas id="gR"></canvas></div>
@@ -189,65 +189,51 @@ function fit(c){ const dpr=Math.max(1,window.devicePixelRatio||1); const r=c.get
   c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height}; }
 
 // ================= 회로도 =================
-function loopPath(){
-  // 시계방향: 전원(+, 위) → 위 → 오른쪽(저항) → 아래 → 전원(−)
-  if(S.mode==='short') return [[70,120],[195,120],[195,240],[70,240]];
-  return [[70,120],[290,120],[290,240],[70,240]];
-}
-function segLens(pts){ const L=[]; let tot=0; for(let i=0;i<pts.length-1;i++){ const d=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1]); L.push(d); tot+=d;} return {L,tot}; }
-function ptAt(pts,frac){ const {L,tot}=segLens(pts); let d=((frac%1)+1)%1*tot; for(let i=0;i<L.length;i++){ if(d<=L[i]){ const u=d/L[i]; return [pts[i][0]+(pts[i+1][0]-pts[i][0])*u, pts[i][1]+(pts[i+1][1]-pts[i][1])*u]; } d-=L[i]; } return pts[pts.length-1]; }
-
-function drawCkt(){
-  const c=document.getElementById('ckt'); const {ctx,w,h}=fit(c); ctx.clearRect(0,0,w,h);
-  const text=css('--text'), muted=css('--muted'), teach=css('--teach'), blue=css('--design'), rose=css('--write'), surf=css('--surface');
-  const W=x=>x*w/360, H=y=>y*h/360;
-  const wire=(x1,y1,x2,y2,col,lw)=>{ ctx.strokeStyle=col||text; ctx.lineWidth=lw||2; ctx.beginPath(); ctx.moveTo(W(x1),H(y1)); ctx.lineTo(W(x2),H(y2)); ctx.stroke(); };
-
-  const shorted=S.mode==='short', open=S.mode==='open';
-  // 기본 사각 배선
-  wire(70,120,290,120, text); wire(290,240,70,240, text);
-  // 오른쪽: 저항(정상/개방) 또는 short시 흐릿
-  const resCol = shorted? muted : text;
-  // 저항 지그재그 (x=290, y 120..240)
-  ctx.strokeStyle=resCol; ctx.lineWidth=2; ctx.globalAlpha=shorted?0.4:1; let yy=H(150); ctx.beginPath(); ctx.moveTo(W(290),H(120)); ctx.lineTo(W(290),H(150));
-  for(let i=0;i<6;i++){ yy+=H(60)/6; ctx.lineTo(W(290)+(i%2?-7:7),yy-H(60)/12); ctx.lineTo(W(290),yy);} ctx.lineTo(W(290),H(240)); ctx.stroke(); ctx.globalAlpha=1;
-  ctx.fillStyle=resCol; ctx.font='12.5px Pretendard'; ctx.textAlign='left'; ctx.textBaseline='middle';
-  ctx.fillText('R = '+S.R+' Ω', W(300), H(180));
-
-  // short 바이패스 배선
-  if(shorted){ wire(195,120,195,240, rose, 3);
-    ctx.fillStyle=rose; ctx.font='bold 12px Pretendard'; ctx.textAlign='center'; ctx.fillText('단락', W(195), H(110)); }
-  // open 스위치(윗변 끊김)
-  if(open){ ctx.clearRect(W(165),H(112),W(48),H(16)); wire(70,120,168,120,text); wire(212,120,290,120,text);
-    ctx.strokeStyle=text; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W(168),H(120)); ctx.lineTo(W(206),H(104)); ctx.stroke();
-    ctx.fillStyle=muted; ctx.beginPath(); ctx.arc(W(168),H(120),2.6,0,7); ctx.arc(W(212),H(120),2.6,0,7); ctx.fill();
-    ctx.fillStyle=text; ctx.font='12px Pretendard'; ctx.textAlign='center'; ctx.fillText('개방(스위치 off)', W(190), H(96)); }
-
-  // 전원(왼쪽): 원형 소스
-  const scx=70, scy=180;
-  wire(scx,120,scx,scy-26,text); wire(scx,scy+26,scx,240,text);
-  ctx.beginPath(); ctx.arc(W(scx),H(scy),W(26),0,7); ctx.fillStyle=surf; ctx.fill(); ctx.strokeStyle=teach; ctx.lineWidth=2; ctx.stroke();
-  ctx.fillStyle=teach; ctx.textAlign='center';
-  if(S.ac){ ctx.font='16px Pretendard'; ctx.fillText('∿', W(scx), H(scy)); }
-  else { ctx.font='bold 15px Pretendard'; ctx.fillText('+', W(scx), H(scy-9)); ctx.fillText('–', W(scx), H(scy+10)); }
-  ctx.font='12.5px Pretendard'; ctx.fillText('V = '+S.V+' V', W(scx), H(scy+42));
-
-  // 전류 점(●)
-  const I=Imag(), pts=loopPath();
-  if(!open && I>0){
-    const N = clamp(Math.round(4+I*1.1), 4, 22);
-    const dir = S.ac ? Math.sign(Math.sin(2*Math.PI*S.t)) || 1 : 1;
-    const col = shorted? rose : blue;
-    for(let k=0;k<N;k++){ const f=(S.flow*dir + k/N); const p=ptAt(pts,f);
-      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(W(p[0]),H(p[1]), shorted?3.6:3, 0,7); ctx.fill(); }
-    // 방향 화살표(윗변)
-    const a=ptAt(pts,0.12), col2=col; ctx.fillStyle=col2;
-    const ax=W(a[0]),ay=H(a[1]), dd=dir;
-    ctx.beginPath(); ctx.moveTo(ax+dd*7,ay); ctx.lineTo(ax-dd*4,ay-5); ctx.lineTo(ax-dd*4,ay+5); ctx.closePath(); ctx.fill();
-  }
-  // 라벨
-  ctx.fillStyle=muted; ctx.font='11px Pretendard'; ctx.textAlign='center';
-  ctx.fillText('닫힌 고리(회로)', W(180), H(272));
+// ===== SVG 회로도 (깔끔한 표준 기호) =====
+const _T='var(--text)',_MU='var(--muted)',_TE='var(--teach)',_BL='var(--design)',_RS='var(--write)',_SF='var(--surface)';
+function _txt(x,y,s,c,sz,anc,wt){return '<text x="'+x+'" y="'+y+'" fill="'+(c||_T)+'" font-size="'+(sz||12)+'" font-family="Pretendard,sans-serif" text-anchor="'+(anc||'middle')+'" dominant-baseline="middle"'+(wt?' font-weight="'+wt+'"':'')+'>'+s+'</text>';}
+function _wire(pts,c,wd){return '<polyline points="'+pts+'" fill="none" stroke="'+(c||_T)+'" stroke-width="'+(wd||2.4)+'" stroke-linecap="round" stroke-linejoin="round"/>';}
+function buildCkt(){
+  const svg=document.getElementById('ckt'); if(!svg) return;
+  const open=S.mode==='open', shorted=S.mode==='short', I=Imag();
+  const L=60,Rt=250,top=70,bot=250,sy=160,byp=175;
+  let g='';
+  const pathD = shorted ? 'M'+L+','+top+' L'+byp+','+top+' L'+byp+','+bot+' L'+L+','+bot+' Z'
+                        : 'M'+L+','+top+' L'+Rt+','+top+' L'+Rt+','+bot+' L'+L+','+bot+' Z';
+  g+='<path id="cpath" d="'+pathD+'" fill="none" stroke="none"/>';
+  // 상단 배선 (개방이면 스위치)
+  if(open){ g+=_wire(L+','+top+' 166,'+top)+_wire('210,'+top+' '+Rt+','+top);
+    g+='<line x1="166" y1="'+top+'" x2="205" y2="'+(top-16)+'" stroke="'+_T+'" stroke-width="2.4"/>';
+    g+='<circle cx="166" cy="'+top+'" r="2.8" fill="'+_MU+'"/><circle cx="210" cy="'+top+'" r="2.8" fill="'+_MU+'"/>';
+    g+=_txt(188,top-26,'개방 (스위치 off)',_T,11.5,'middle'); }
+  else { g+=_wire(L+','+top+' '+Rt+','+top); }
+  g+=_wire(Rt+','+bot+' '+L+','+bot);
+  // 좌: 전원
+  g+=_wire(L+','+top+' '+L+','+(sy-24))+_wire(L+','+(sy+24)+' '+L+','+bot);
+  if(S.ac){ g+='<circle cx="'+L+'" cy="'+sy+'" r="22" fill="'+_SF+'" stroke="'+_TE+'" stroke-width="2.2"/>'+_txt(L,sy,'∿',_TE,20,'middle',700); }
+  else { g+='<line x1="'+(L-16)+'" y1="'+(sy-8)+'" x2="'+(L+16)+'" y2="'+(sy-8)+'" stroke="'+_T+'" stroke-width="2.8"/>'+
+    '<line x1="'+(L-8)+'" y1="'+(sy+8)+'" x2="'+(L+8)+'" y2="'+(sy+8)+'" stroke="'+_T+'" stroke-width="2.8"/>'+
+    _txt(L+21,sy-8,'+',_RS,12,'start',700)+_txt(L+21,sy+8,'−',_MU,12,'start',700); }
+  g+=_txt(L,sy+40,'V = '+S.V+' V',_TE,12.5,'middle',700);
+  // 우: 저항 (IEC 사각)
+  if(!shorted){ g+='<rect x="'+(Rt-11)+'" y="'+(sy-27)+'" width="22" height="54" rx="4" fill="'+_SF+'" stroke="'+_T+'" stroke-width="2.2"/>'+
+    _wire(Rt+','+top+' '+Rt+','+(sy-27))+_wire(Rt+','+(sy+27)+' '+Rt+','+bot)+_txt(Rt+18,sy,'R = '+S.R+' Ω',_MU,12.5,'start',700); }
+  else { g+='<rect x="'+(Rt-11)+'" y="'+(sy-27)+'" width="22" height="54" rx="4" fill="none" stroke="'+_MU+'" stroke-width="1.6" opacity="0.4"/>'+
+    _wire(Rt+','+top+' '+Rt+','+(sy-27),_MU)+_wire(Rt+','+(sy+27)+' '+Rt+','+bot,_MU)+
+    _wire(byp+','+top+' '+byp+','+bot,_RS,3.2)+_txt(byp,top-13,'단락',_RS,12,'middle',800); }
+  // 전압 화살표(회로 바깥, +→−)
+  g+='<line x1="30" y1="'+(sy-20)+'" x2="30" y2="'+(sy+14)+'" stroke="'+_RS+'" stroke-width="2"/>'+
+     '<polygon points="30,'+(sy+21)+' 26,'+(sy+12)+' 34,'+(sy+12)+'" fill="'+_RS+'"/>'+
+     _txt(30,sy-28,'V',_RS,12,'middle',800)+_txt(38,sy-13,'+',_RS,10,'start',700)+_txt(38,sy+17,'−',_RS,10,'start',700);
+  // 전류 화살표(전선 위)
+  if(!open && I>0){ const cc=shorted?_RS:_BL; g+='<polygon points="160,'+top+' 150,'+(top-5)+' 150,'+(top+5)+'" fill="'+cc+'"/>'+_txt(152,top-13,'I',cc,12.5,'middle',800); }
+  g+=_txt(155,bot+22,'닫힌 고리(회로)',_MU,11.5,'middle');
+  g+='<g id="cdots"></g>';
+  svg.innerHTML=g;
+  // 전류 점 생성
+  const cd=svg.querySelector('#cdots');
+  if(!open && I>0){ const N=clamp(Math.round(4+I*1.1),4,20), col=shorted?'#d64b3c':'#5578ff';
+    for(let k=0;k<N;k++){ const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('r',shorted?3.4:3); c.setAttribute('fill',col); c.setAttribute('data-k',k); c.setAttribute('data-n',N); cd.appendChild(c); } }
 }
 
 // ================= 관계 그래프 =================
@@ -280,7 +266,7 @@ function updateReadout(){ const I=Imag();
     '<br><span style="color:var(--muted);font-size:13px">빨대 비유 — 전압=부는 힘, 전류=지나가는 공기, 저항=빨대의 좁기</span>';
 }
 
-function redrawAll(){ drawCkt(); drawGV(); drawGR(); updateReadout(); }
+function redrawAll(){ buildCkt(); drawGV(); drawGR(); updateReadout(); }
 
 // 컨트롤
 document.getElementById('sV').addEventListener('input',e=>{S.V=+e.target.value; document.getElementById('vV').textContent=S.V; redrawAll();});
@@ -295,7 +281,10 @@ let last=performance.now();
 function tick(now){ const dt=(now-last)/1000; last=now; S.t+=dt;
   const I=Imag(); const spd=clamp(I/30,0,0.06)+0.004;
   S.flow=(S.flow+dt*spd*6)%1;
-  drawCkt(); anim=requestAnimationFrame(tick);
+  const svg=document.getElementById('ckt'); const path=svg&&svg.querySelector('#cpath');
+  if(path){ const Ltot=path.getTotalLength(); const dir=S.ac?(Math.sign(Math.sin(2*Math.PI*S.t))||1):1;
+    svg.querySelectorAll('#cdots circle').forEach(function(c){ const k=+c.getAttribute('data-k'),N=+c.getAttribute('data-n'); const f=((S.flow*dir+k/N)%1+1)%1; const p=path.getPointAtLength(f*Ltot); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); }); }
+  anim=requestAnimationFrame(tick);
 }
 let anim=requestAnimationFrame(tick);
 window.addEventListener('resize',redrawAll); window.addEventListener('load',redrawAll);
